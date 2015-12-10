@@ -1,0 +1,15 @@
+﻿  BSP.cpp
+  main.cpp
+main.cpp(569): warning C4554: '&': check operator precedence for possible error; use parentheses to clarify precedence
+main.cpp(604): warning C4800: 'char *': forcing value to bool 'true' or 'false' (performance warning)
+main.cpp(605): warning C4800: 'char *': forcing value to bool 'true' or 'false' (performance warning)
+main.cpp(606): warning C4800: 'char *': forcing value to bool 'true' or 'false' (performance warning)
+main.cpp(607): warning C4800: 'char *': forcing value to bool 'true' or 'false' (performance warning)
+main.cpp(579): warning C4101: 'oldAng': unreferenced local variable
+  PMemory.cpp
+  Generating code
+  261 of 263 functions (99.2%) were compiled, the rest were copied from previous compilation.
+    4 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  CSGO Litehack.vcxproj -> C:\Users\Kevin\Downloads\CSGO\Release\CSGO Litehack.exe
