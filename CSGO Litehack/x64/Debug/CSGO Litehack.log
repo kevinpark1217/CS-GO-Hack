@@ -1,0 +1,19 @@
+﻿Build started 10/27/2015 2:02:26 AM.
+     1>Project "C:\Users\Kevin\Documents\Visual Studio 2015\Projects\CSGO\CSGO Litehack\CSGO Litehack.vcxproj" on node 5 (Rebuild target(s)).
+     1>ClCompile:
+         C:\Program Files (x86)\Microsoft Visual Studio 14.0\VC\bin\x86_amd64\CL.exe /c /ZI /nologo /W3 /WX- /sdl /Od /D _DEBUG /D _CONSOLE /D _MBCS /Gm /EHsc /RTC1 /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Zc:inline /Fo"x64\Debug\\" /Fd"x64\Debug\vc140.pdb" /Gd /TP /errorReport:prompt BSP.cpp main.cpp PMemory.cpp
+         PMemory.cpp
+     1>c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\pmemory.cpp(42): warning C4311: 'type cast': pointer truncation from 'HMODULE' to 'DWORD'
+     1>c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\pmemory.cpp(42): warning C4302: 'type cast': truncation from 'HMODULE' to 'DWORD'
+     1>c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\pmemory.cpp(85): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+     1>c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\pmemory.cpp(85): error C2664: 'BOOL ReadProcessMemory(HANDLE,LPCVOID,LPVOID,SIZE_T,SIZE_T *)': cannot convert argument 5 from 'unsigned long *' to 'SIZE_T *'
+         c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\pmemory.cpp(85): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+         main.cpp
+     1>c:\users\kevin\documents\visual studio 2015\projects\csgo\csgo litehack\main.h(10): fatal error C1083: Cannot open include file: 'GL/glut.h': No such file or directory
+         BSP.cpp
+         Generating Code...
+     1>Done Building Project "C:\Users\Kevin\Documents\Visual Studio 2015\Projects\CSGO\CSGO Litehack\CSGO Litehack.vcxproj" (Rebuild target(s)) -- FAILED.
+
+Build FAILED.
+
+Time Elapsed 00:00:06.89
