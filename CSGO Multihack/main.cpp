@@ -311,7 +311,6 @@ struct
 
 }EntityList;
 
-
 bool isPanic = false;
 
 bool isTrigger, isTriggerToggle, isTriggerFriendly, isTriggerHold;
@@ -1366,11 +1365,16 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 										boxPos[p] = std::numeric_limits<float>::max();
 								}
 
+								float playerPosition[3];
+								EntityList.GetPosition(j, playerPosition);
 								for (int b = 0; b < boneCount; b++)
 								{
 									EntityList.GetBonePosition(j, bone3D[b], b);
-									if (!WorldToScreen(bone3D[b], bone2D[b]))
+									if (fabs(playerPosition[0] - bone3D[b][0]) > 100 || fabs(playerPosition[1] - bone3D[b][1]) > 100 || fabs(playerPosition[2] - bone3D[b][2]) > 100 || !WorldToScreen(bone3D[b], bone2D[b])) {
+										bone2D[b][0] = -1;
+										bone2D[b][1] = -1;
 										continue;
+									}
 									int parentId = -1;
 
 									if (strstr(chModel, "ctm_fbi"))
@@ -1405,11 +1409,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 									if (parentId == -1)
 										continue;
 
-									EntityList.GetBonePosition(j, bone3D[b], b);
-									if (!WorldToScreen(bone3D[b], bone2D[b]))
-										continue;
-
-									if (isWallExternal)
+									if (isWallExternal && bone2D[b][0] != -1 && bone2D[b][1] != -1)
 										DrawSnaplines(bone2D[b][0], bone2D[b][1], bone2D[parentId][0], bone2D[parentId][1]);
 
 									if (bone2D[b][0] < boxPos[0] && bone2D[b][0]>0.0f)

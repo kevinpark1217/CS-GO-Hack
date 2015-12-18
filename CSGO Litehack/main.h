@@ -13,29 +13,29 @@
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 
-const DWORD DwCrosshairId = 0x0000A924;
+const DWORD DwCrosshairId = 0x0000C554;
 const DWORD DwVecViewOffset = 0x00000104;
 const DWORD DwVecOrigin = 0x00000134;
-const DWORD DwVecPunch = 0x00002FF8;
+const DWORD DwVecPunch = 0x00004C28;
 const DWORD DwTeamNumber = 0xF0;
-const DWORD DwShotsFired = 0x0000A280;
-const DWORD DwBoneMatrix = 0x0000267C;
+const DWORD DwShotsFired = 0x0000BEB0;
+const DWORD DwBoneMatrix = 0x000042A8;
 const DWORD DwEntitySize = 0x10;
 const DWORD DwHealth = 0xFC;
 const DWORD DwLifeState = 0x25B;
 const DWORD DwVecVelocity = 0x110;
 const DWORD DwIsDormant = 0xE9;
-const DWORD DwFlash = 0x0000A2C4;
-const DWORD DwFlashDuration = 0x0000A2C8;
+const DWORD DwFlash = 0x0000BEF4;
+const DWORD DwFlashDuration = 0x0000BEF8;
 const DWORD DwSpotted = 0x00000935;
-const DWORD DwActiveWeapon = 0x00002EC8;
+const DWORD DwActiveWeapon = 0x00004AF8;
 const DWORD DwFlags = 0x100;
 const DWORD DwMapname = 0x00000284;
-const DWORD DwWeaponId = 0x000032BC;
-const DWORD DwClip = 0x000031D4;
+const DWORD DwWeaponId = 0x00004EEC;
+const DWORD DwClip = 0x00004E04;
 const DWORD DwInGame = 0x00000100;
 const DWORD DwMaxPlayer = 0x00000308;
-const DWORD DwWeaponReserve = 0x31DC;
+const DWORD DwWeaponReserve = 0x4E0C;
 
 /*struct Vector
 {
