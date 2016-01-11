@@ -27,7 +27,7 @@ PModule modEngine, modClient;
 HWND csgo;
 HANDLE handle;
 BSP bsp;
-const char* version = "2.6.1";
+const char* version = "2.7.4";
 
 DWORD DwLocalPlayer, DwEntityList, DwEnginePointer, DwViewAngle, DwGlow, DwViewMatrix, DwRadarBase, DwIGameResources;
 
@@ -313,14 +313,14 @@ struct
 
 bool isPanic = false;
 
-bool isTrigger, isTriggerToggle, isTriggerFriendly, isTriggerHold;
-int triggerToggleKey, triggerDelay, triggerHoldKey;
+bool isTrigger[4], isTriggerToggle, isTriggerFriendly, isTriggerHold;
+int triggerToggleKey, triggerDelay[4], triggerHoldKey;
 
-bool isRcs, isRcsToggle, isRcsCross;
+bool isRcs[4], isRcsToggle, isRcsCross;
 int rcsToggleKey, rcsAmount;
 
-bool isAimbot, isAimbotToggle, isAimbotFriendly, isHoldAim, isAimWall, isAimShoot;
-int aimbotToggleKey, aimBone, aimbotHoldKey, aimSmooth;
+bool isAimbot[4], isAimbotToggle, isAimbotFriendly, isHoldAim[4], isAimWall, isAimShoot[4], isAimLegit;
+int aimbotToggleKey, aimBone[4], aimbotHoldKey, aimSmooth[4], aimRandom[4];
 
 bool isBhop, isBhopToggle;
 int bhopToggleKey, bhopGameBind, bhopJumpBind;
@@ -337,6 +337,7 @@ int rageToggleKey;
 int panelKey, panicKey;
 
 bool isRunning, panelEnabled;
+int activeMode = -1, editMode = 0;
 
 void loadConfig() {
 	std::ifstream config("config.ini");
@@ -345,14 +346,26 @@ void loadConfig() {
 		std::string line;
 		while (getline(config, line)) {
 			//Trigger
-			if (line.find("isTrigger:") == 0)
-				isTrigger = (bool)stoi(line.substr(line.find(":") + 1));
+			if (line.find("isTrigger0:") == 0)
+				isTrigger[0] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isTrigger1:") == 0)
+				isTrigger[1] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isTrigger2:") == 0)
+				isTrigger[2] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isTrigger3:") == 0)
+				isTrigger[3] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isTriggerToggle:") == 0)
 				isTriggerToggle = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("triggerToggleKey:") == 0)
 				triggerToggleKey = stoi(line.substr(line.find(":") + 1));
-			else if (line.find("triggerDelay:") == 0)
-				triggerDelay = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("triggerDelay0:") == 0)
+				triggerDelay[0] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("triggerDelay1:") == 0)
+				triggerDelay[1] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("triggerDelay2:") == 0)
+				triggerDelay[2] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("triggerDelay3:") == 0)
+				triggerDelay[3] = stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isTriggerFriendly:") == 0)
 				isTriggerFriendly = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isTriggerHold:") == 0)
@@ -360,8 +373,14 @@ void loadConfig() {
 			else if (line.find("triggerHoldKey:") == 0)
 				triggerHoldKey = stoi(line.substr(line.find(":") + 1));
 			//Rcs
-			else if (line.find("isRcs:") == 0)
-				isRcs = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isRcs0:") == 0)
+				isRcs[0] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isRcs1:") == 0)
+				isRcs[1] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isRcs2:") == 0)
+				isRcs[2] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isRcs3:") == 0)
+				isRcs[3] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isRcsToggle:") == 0)
 				isRcsToggle = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("rcsToggleKey:") == 0)
@@ -371,26 +390,66 @@ void loadConfig() {
 			else if (line.find("isRcsCross:") == 0)
 				isRcsCross = (bool)stoi(line.substr(line.find(":") + 1));
 			//Aimbot
-			else if (line.find("isAimbot:") == 0)
-				isAimbot = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimbot0:") == 0)
+				isAimbot[0] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimbot1:") == 0)
+				isAimbot[1] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimbot2:") == 0)
+				isAimbot[2] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimbot3:") == 0)
+				isAimbot[3] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimbotToggle:") == 0)
 				isAimbotToggle = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("aimbotToggleKey:") == 0)
 				aimbotToggleKey = stoi(line.substr(line.find(":") + 1));
-			else if (line.find("aimBone:") == 0)
-				aimBone = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimBone0:") == 0)
+				aimBone[0] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimBone1:") == 0)
+				aimBone[1] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimBone2:") == 0)
+				aimBone[2] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimBone3:") == 0)
+				aimBone[3] = stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimbotFriendly:") == 0)
 				isAimbotFriendly = (bool)stoi(line.substr(line.find(":") + 1));
-			else if (line.find("isHoldAim:") == 0)
-				isHoldAim = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isHoldAim0:") == 0)
+				isHoldAim[0] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isHoldAim1:") == 0)
+				isHoldAim[1] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isHoldAim2:") == 0)
+				isHoldAim[2] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isHoldAim3:") == 0)
+				isHoldAim[3] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimWall:") == 0)
 				isAimWall = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("aimbotHoldKey:") == 0)
 				aimbotHoldKey = stoi(line.substr(line.find(":") + 1));
-			else if (line.find("aimSmooth:") == 0)
-				aimSmooth = stoi(line.substr(line.find(":") + 1));
-			else if (line.find("isAimShoot:") == 0)
-				isAimShoot = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimSmooth0:") == 0)
+				aimSmooth[0] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimSmooth1:") == 0)
+				aimSmooth[1] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimSmooth2:") == 0)
+				aimSmooth[2] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimSmooth3:") == 0)
+				aimSmooth[3] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimRandom0:") == 0)
+				aimRandom[0] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimRandom1:") == 0)
+				aimRandom[1] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimRandom2:") == 0)
+				aimRandom[2] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimRandom3:") == 0)
+				aimRandom[3] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimShoot0:") == 0)
+				isAimShoot[0] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimShoot1:") == 0)
+				isAimShoot[1] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimShoot2:") == 0)
+				isAimShoot[2] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimShoot3:") == 0)
+				isAimShoot[3] = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("isAimLegit:") == 0)
+				isAimLegit = (bool)stoi(line.substr(line.find(":") + 1));
 			//Bhop
 			else if (line.find("isBhop:") == 0)
 				isBhop = (bool)stoi(line.substr(line.find(":") + 1));
@@ -472,30 +531,59 @@ void saveConfig() {
 	std::ofstream config("config.ini");
 	if (config.is_open())
 	{
-		config << "isTrigger:" << isTrigger << "\n";
+		config << "isTrigger0:" << isTrigger[0] << "\n";
+		config << "isTrigger1:" << isTrigger[1] << "\n";
+		config << "isTrigger2:" << isTrigger[2] << "\n";
+		config << "isTrigger3:" << isTrigger[3] << "\n";
 		config << "isTriggerToggle:" << isTriggerToggle << "\n";
 		config << "triggerToggleKey:" << triggerToggleKey << "\n";
-		config << "triggerDelay:" << triggerDelay << "\n";
+		config << "triggerDelay0:" << triggerDelay[0] << "\n";
+		config << "triggerDelay1:" << triggerDelay[1] << "\n";
+		config << "triggerDelay2:" << triggerDelay[2] << "\n";
+		config << "triggerDelay3:" << triggerDelay[3] << "\n";
 		config << "isTriggerFriendly:" << isTriggerFriendly << "\n";
 		config << "isTriggerHold:" << isTriggerHold << "\n";
 		config << "triggerHoldKey:" << triggerHoldKey << "\n";
 
-		config << "isRcs:" << isRcs << "\n";
+		config << "isRcs0:" << isRcs[0] << "\n";
+		config << "isRcs1:" << isRcs[1] << "\n";
+		config << "isRcs2:" << isRcs[2] << "\n";
+		config << "isRcs3:" << isRcs[3] << "\n";
 		config << "isRcsToggle:" << isRcsToggle << "\n";
 		config << "rcsToggleKey:" << rcsToggleKey << "\n";
 		config << "rcsAmount:" << rcsAmount << "\n";
 		config << "isRcsCross:" << isRcsCross << "\n";
 
-		config << "isAimbot:" << isAimbot << "\n";
+		config << "isAimbot0:" << isAimbot[0] << "\n";
+		config << "isAimbot1:" << isAimbot[1] << "\n";
+		config << "isAimbot2:" << isAimbot[2] << "\n";
+		config << "isAimbot3:" << isAimbot[3] << "\n";
 		config << "isAimbotToggle:" << isAimbotToggle << "\n";
 		config << "aimbotToggleKey:" << aimbotToggleKey << "\n";
-		config << "aimBone:" << aimBone << "\n";
+		config << "aimBone0:" << aimBone[0] << "\n";
+		config << "aimBone1:" << aimBone[1] << "\n";
+		config << "aimBone2:" << aimBone[2] << "\n";
+		config << "aimBone3:" << aimBone[3] << "\n";
 		config << "isAimbotFriendly:" << isAimbotFriendly << "\n";
-		config << "isHoldAim:" << isHoldAim << "\n";
+		config << "isHoldAim0:" << isHoldAim[0] << "\n";
+		config << "isHoldAim1:" << isHoldAim[1] << "\n";
+		config << "isHoldAim2:" << isHoldAim[2] << "\n";
+		config << "isHoldAim3:" << isHoldAim[3] << "\n";
 		config << "isAimWall:" << isAimWall << "\n";
 		config << "aimbotHoldKey:" << aimbotHoldKey << "\n";
-		config << "aimSmooth:" << aimSmooth << "\n";
-		config << "isAimShoot:" << isAimShoot << "\n";
+		config << "aimSmooth0:" << aimSmooth[0] << "\n";
+		config << "aimSmooth1:" << aimSmooth[1] << "\n";
+		config << "aimSmooth2:" << aimSmooth[2] << "\n";
+		config << "aimSmooth3:" << aimSmooth[3] << "\n";
+		config << "aimRandom0:" << aimRandom[0] << "\n";
+		config << "aimRandom1:" << aimRandom[1] << "\n";
+		config << "aimRandom2:" << aimRandom[2] << "\n";
+		config << "aimRandom3:" << aimRandom[3] << "\n";
+		config << "isAimShoot0:" << isAimShoot[0] << "\n";
+		config << "isAimShoot1:" << isAimShoot[1] << "\n";
+		config << "isAimShoot2:" << isAimShoot[2] << "\n";
+		config << "isAimShoot3:" << isAimShoot[3] << "\n";
+		config << "isAimLegit:" << isAimLegit << "\n";
 
 		config << "isBhop:" << isBhop << "\n";
 		config << "isBhopToggle:" << isBhopToggle << "\n";
@@ -540,38 +628,67 @@ void saveConfig() {
 	}
 }
 void resetConfig() {
-	isTrigger = false;
+	isTrigger[0] = false;
+	isTrigger[1] = false;
+	isTrigger[2] = false;
+	isTrigger[3] = false;
 	isTriggerToggle = false;
 	triggerToggleKey = 97;
-	triggerDelay = 1;
+	triggerDelay[0] = 15;
+	triggerDelay[1] = 20;
+	triggerDelay[2] = 10;
+	triggerDelay[3] = 5;
 	isTriggerFriendly = false;
 	isTriggerHold = false;
 	triggerHoldKey = 5;
 
-	isRcs = false;
+	isRcs[0] = true;
+	isRcs[1] = true;
+	isRcs[2] = false;
+	isRcs[3] = false;
 	isRcsToggle = false;
 	rcsToggleKey = 98;
-	rcsAmount = 100;
+	rcsAmount = 99;
 	isRcsCross = false;
 
-	isAimbot = false;
+	isAimbot[0] = true;
+	isAimbot[1] = true;
+	isAimbot[2] = true;
+	isAimbot[3] = true;
 	isAimbotToggle = false;
 	aimbotToggleKey = 99;
-	aimBone = 10;
+	aimBone[0] = 0;
+	aimBone[1] = 0;
+	aimBone[2] = 1;
+	aimBone[3] = 0;
 	isAimbotFriendly = false;
-	isHoldAim = false;
+	isHoldAim[0] = true;
+	isHoldAim[1] = false;
+	isHoldAim[2] = true;
+	isHoldAim[3] = true;
 	isAimWall = false;
 	aimbotHoldKey = 5;
-	aimSmooth = 20;
-	isAimShoot = false;
+	aimSmooth[0] = 25;
+	aimSmooth[1] = 40;
+	aimSmooth[2] = 20;
+	aimSmooth[3] = 20;
+	aimRandom[0] = 25;
+	aimRandom[1] = 30;
+	aimRandom[2] = 35;
+	aimRandom[3] = 20;
+	isAimShoot[0] = true;
+	isAimShoot[1] = false;
+	isAimShoot[2] = true;
+	isAimShoot[3] = true;
+	isAimLegit = true;
 
 	isBhop = false;
 	isBhopToggle = false;
 	bhopToggleKey = 96;
-	bhopGameBind = VK_SPACE;
-	bhopJumpBind = VK_MENU;
+	bhopGameBind = VK_MENU;
+	bhopJumpBind = VK_SPACE;
 
-	isWall = false;
+	isWall = true;
 	isWallToggle = false;
 	wallToggleKey = 100;
 	isWallFriendly = false;
@@ -582,9 +699,9 @@ void resetConfig() {
 	isName = true;
 	isWeapon = true;
 	isChicken = false;
-	isBomb = false;
+	isBomb = true;
 
-	isRadar = false;
+	isRadar = true;
 	isRadarToggle = false;
 	radarToggleKey = 101;
 	isFlash = false;
@@ -593,8 +710,8 @@ void resetConfig() {
 	isInfo = false;
 	isInfoToggle = false;
 	infoToggleKey = 103;
-	infoX = 10;
-	infoY = 675;
+	infoX = 300;
+	infoY = 80;
 
 	isRage = false;
 	isRageToggle = false;
@@ -636,7 +753,7 @@ HINSTANCE CurrentInstance;
 HDC MainHDC;
 HGLRC MainHGLRC;
 HPALETTE MainPalette;
-LPCSTR WName = "CSGO Multihack Overlay";
+LPCSTR WName = "TekHak View";
 
 float Get3D(float *myPos, float *enPos)
 {
@@ -741,7 +858,7 @@ bool WorldToScreen(float * from, float * to)
 void DrawFilledBox(float x, float y, float x2, float y2, int* RGB)
 {
 	glBegin(GL_QUADS);
-	glColor4f((GLfloat)RGB[0], (GLfloat)RGB[1], (GLfloat)RGB[2], 1.0f);
+	glColor4f((GLfloat)RGB[0]/255, (GLfloat)RGB[1]/ 255, (GLfloat)RGB[2]/255, 1.0f);
 	glVertex2f(x, y);
 	glVertex2f(x, y2);
 	glVertex2f(x2, y2);
@@ -762,7 +879,7 @@ void DrawCross(float x, float y, float width, float height, float LineWidth, int
 {
 	glLineWidth(LineWidth);
 	glBegin(GL_LINES);
-	glColor4f((GLfloat)RGB[0], (GLfloat)RGB[1], (GLfloat)RGB[2], 1.0f);
+	glColor4f((GLfloat)RGB[0] / 255, (GLfloat)RGB[1] / 255, (GLfloat)RGB[2] / 255, 1.0f);
 	glVertex2f(x, y + height);
 	glVertex2f(x, y - height);
 	glVertex2f(x + width, y);
@@ -774,7 +891,7 @@ void DrawBox(float x, float y, float x2, float y2, int* RGB)
 {
 	glLineWidth(2);
 	glBegin(GL_LINE_LOOP);
-	glColor4f((GLfloat)RGB[0], (GLfloat)RGB[1], (GLfloat)RGB[2], 1.0f);
+	glColor4f((GLfloat)RGB[0]/255, (GLfloat)RGB[1] / 255, (GLfloat)RGB[2] / 255, 1.0f);
 	glVertex2f(x , y);
 	glVertex2f(x , y2);
 	glVertex2f(x2, y2);
@@ -1004,6 +1121,35 @@ void DoNumberChangeBox(int *number, char* text, char* unit, int lowerBound, int 
 	glCallLists(strlen(unit), GL_UNSIGNED_BYTE, unit);
 }
 
+void DoButtonBox(char* text, int profileId, int &i, int &j, int line) {
+	char buf[13];
+	char num[4];
+	glColor4f((GLfloat)panelBoxColor, (GLfloat)panelBoxColor, (GLfloat)panelBoxColor, 1.0f);
+	glRasterPos2f(x + xx*i + 30, y + yy*j + 60 + line*PanelSpacing);
+	strcpy(buf, "Profile ");
+	_itoa(profileId+1, num, 10);
+	strcat_s(buf, num);
+	strcat_s(buf, ":");
+	glCallLists(strlen(buf), GL_UNSIGNED_BYTE, buf);
+
+	glColor4f((GLfloat)color0[0] / 255, (GLfloat)color0[1] / 255, (GLfloat)color0[2] / 255, 1.0f);
+	if (profileId == editMode)
+		DrawPanelFill(x + xx*i + 150, y + yy*j + 48 + line*PanelSpacing, 65, 14);
+	POINT p;
+	if ((GetKeyState(VK_LBUTTON) & 0x100) != 0 && GetCursorPos(&p) && p.x > x + xx*i + 150 && p.x < x + xx*i + 150 + 64 && p.y > y + yy*j + 48 + line*PanelSpacing && p.y < y + yy*j + 62 + line*PanelSpacing) {
+		DrawPanelFill(x + xx*i + 150, y + yy*j + 48 + line*PanelSpacing, 65, 14);
+		if (!isMouseClicked) {
+			editMode = profileId;
+			isMouseClicked = true;
+		}
+	}
+	glColor4f((GLfloat)panelBoxColor, (GLfloat)panelBoxColor, (GLfloat)panelBoxColor, 1.0f);
+
+	DrawPanelBox(x + xx*i + 150, y + yy*j + 48 + line*PanelSpacing, 65, 14);
+	glRasterPos2f(x + xx*i + 150 + 5, y + yy*j + 60 + line*PanelSpacing);
+	glCallLists(strlen(text), GL_UNSIGNED_BYTE, text);
+}
+
 void DrawPanel() {
 	
 	if ((GetKeyState(VK_LBUTTON) & 0x8000) == 0 && isMouseClicked)
@@ -1029,6 +1175,19 @@ void DrawPanel() {
 	glColor4f((GLfloat)1, (GLfloat)1, (GLfloat)1, 1.0f);
 	glRasterPos2f(x + 10, y + 20);
 	glCallLists(44, GL_UNSIGNED_BYTE, "TekHak for Counter-Strike: Global Offensive");
+	glRasterPos2f(x + 534, y + 20);
+	glCallLists(9, GL_UNSIGNED_BYTE, "Profile:");
+	glRasterPos2f(x + 585, y + 20);
+	if (activeMode == -1)
+		glCallLists(5, GL_UNSIGNED_BYTE, "None");
+	else if (activeMode == 0)
+		glCallLists(7, GL_UNSIGNED_BYTE, "Pistol");
+	else if (activeMode == 1)
+		glCallLists(6, GL_UNSIGNED_BYTE, "Rifle");
+	else if (activeMode == 2)
+		glCallLists(7, GL_UNSIGNED_BYTE, "Sniper");
+	else if (activeMode == 3)
+		glCallLists(8, GL_UNSIGNED_BYTE, "One Tap");
 	glEnd();
 
 	glLineWidth(1);
@@ -1038,46 +1197,46 @@ void DrawPanel() {
 			DrawPanelStaticBox(x + xx*i + 20, x + xx*(i + 1) + 10, y + yy*j + 40, y + yy*(j + 1) + 30);
 
 			if (i == 0 && j == 0) {
-				DoCheckBox(&isTrigger, "Auto Shoot", i, j, 0);
+				DoCheckBox(&isTrigger[editMode], "Auto Shoot", i, j, 0);
 				DoCheckNumberBox(&isTriggerToggle, &triggerToggleKey, "Toggle Key", i, j, 1);
-				if (!isTrigger)
+				if (!isTrigger[editMode])
 					panelBoxColor = 0.75f;
-				DoNumberChangeBox(&triggerDelay, "Delay", "ms", 0, 999, i, j, 2);
+				DoNumberChangeBox(&triggerDelay[editMode], "Delay", "ms", 0, 999, i, j, 2);
 				DoCheckBox(&isTriggerFriendly, "Friendly Fire", i, j, 3);
 				DoCheckNumberBox(&isTriggerHold, &triggerHoldKey, "Hold Key", i, j, 4);
 				panelBoxColor = 1.0f;
 
-				DoCheckBox(&isRcs, "Recoil Control", i, j, 6);
+				DoCheckBox(&isRcs[editMode], "Recoil Control", i, j, 6);
 				DoCheckNumberBox(&isRcsToggle, &rcsToggleKey, "Toggle Key", i, j, 7);
-				if (!isRcs)
+				if (!isRcs[editMode])
 					panelBoxColor = 0.75f;
 				DoNumberChangeBox(&rcsAmount, "Control Amount", "Percent", 0, 200, i, j, 8);
 				DoCheckBox(&isRcsCross, "Crosshair", i, j, 9);
 				panelBoxColor = 1.0f;
 			}
 			else if (i == 1 && j == 0) {
-				DoCheckBox(&isAimbot, "Aimbot", i, j, 0);
+				DoCheckBox(&isAimbot[editMode], "Aimbot", i, j, 0);
 				DoCheckNumberBox(&isAimbotToggle, &aimbotToggleKey, "Toggle Key", i, j, 1);
 				if(!isAimbot)
 					panelBoxColor = 0.75f;
 				char *boneName[] = { "Head", "Neck", "Chest", "Belly", "Waist", "Hip" };
-				DoNumberCycleBox(&aimBone, "Aim Position", boneName, 6, i, j, 2);
+				DoNumberCycleBox(&aimBone[editMode], "Aim Position", boneName, 6, i, j, 2);
 				DoCheckBox(&isAimbotFriendly, "Friendly", i, j, 3);
-				DoCheckBox(&isAimShoot, "One Tap", i, j, 4);
-				DoNumberChangeBox(&aimSmooth, "Smooth Factor", "", 0, 100, i, j, 5);
-				if(!isHoldAim)
+				DoCheckBox(&isAimShoot[editMode], "One Tap", i, j, 4);
+				DoCheckBox(&isAimLegit, "Legitimate", i, j, 5);
+				if (isAimLegit)
 					panelBoxColor = 0.75f;
-				DoCheckNumberBox(&isHoldAim, &aimbotHoldKey, "Hold Key", i, j, 6);
-				DoCheckBox(&isAimWall, "Through Wall", i, j, 7);
+				DoNumberChangeBox(&aimSmooth[editMode], "Smooth Factor", "", 0, 100, i, j, 6);
+				panelBoxColor = 1.0f;
+				DoNumberChangeBox(&aimRandom[editMode], "Random Factor", "", 0, 100, i, j, 7);
+				if(!isHoldAim[editMode])
+					panelBoxColor = 0.75f;
+				DoCheckNumberBox(&isHoldAim[editMode], &aimbotHoldKey, "Hold Key", i, j, 8);
+				DoCheckBox(&isAimWall, "Through Wall", i, j, 9);
 				panelBoxColor = 1.0f;
 
-				DoCheckBox(&isBhop, "Bunny Hop", i, j, 9);
-				DoCheckNumberBox(&isBhopToggle, &bhopToggleKey, "Toggle Key", i, j, 10);
-				if (!isBhop)
-					panelBoxColor = 0.75f;
-				DoNumberBox(&bhopGameBind, "Jump Key", i, j, 11);
-				DoNumberBox(&bhopJumpBind, "Bhop Key", i, j, 12);
-				panelBoxColor = 1.0f;
+				DoCheckBox(&isRadar, "Radar", i, j, 11);
+				DoCheckNumberBox(&isRadarToggle, &radarToggleKey, "Toggle Key", i, j, 12);
 			}
 			else if (i == 2 && j == 0) {
 				DoCheckBox(&isWall, "Wall", i, j, 0);
@@ -1098,18 +1257,23 @@ void DrawPanel() {
 				panelBoxColor = 1.0f;
 			}
 			else if (i == 0 && j == 1) {
-				DoCheckBox(&isRadar, "Radar", i, j, 0);
-				DoCheckNumberBox(&isRadarToggle, &radarToggleKey, "Toggle Key", i, j, 1);
+				DoCheckBox(&isBhop, "Bunny Hop", i, j, 0);
+				DoCheckNumberBox(&isBhopToggle, &bhopToggleKey, "Toggle Key", i, j, 1);
+				if (!isBhop)
+					panelBoxColor = 0.75f;
+				DoNumberBox(&bhopGameBind, "Jump Key", i, j, 2);
+				DoNumberBox(&bhopJumpBind, "Bhop Key", i, j, 3);
+				panelBoxColor = 1.0f;
 
-				DoCheckBox(&isFlash, "No Flash", i, j, 3);
-				DoCheckNumberBox(&isFlashToggle, &flashToggleKey, "Toggle Key", i, j, 4);
+				DoCheckBox(&isFlash, "No Flash", i, j, 5);
+				DoCheckNumberBox(&isFlashToggle, &flashToggleKey, "Toggle Key", i, j, 6);
 
-				DoCheckBox(&isInfo, "Info", i, j, 6);
-				DoCheckNumberBox(&isInfoToggle, &infoToggleKey, "Toggle Key", i, j, 7);
+				DoCheckBox(&isInfo, "Info", i, j, 8);
+				DoCheckNumberBox(&isInfoToggle, &infoToggleKey, "Toggle Key", i, j, 9);
 				if (!isInfo)
 					panelBoxColor = 0.75f;
-				DoNumberChangeBox(&infoX, "X-Coord", "pixels", 0, 1920, i, j, 8);
-				DoNumberChangeBox(&infoY, "Y-Coord", "pixels", 0, 1080, i, j, 9);
+				DoNumberChangeBox(&infoX, "X-Coord", "pixels", 0, 1920, i, j, 10);
+				DoNumberChangeBox(&infoY, "Y-Coord", "pixels", 0, 1080, i, j, 11);
 				panelBoxColor = 1.0f;
 			}
 			else if (i == 1 && j == 1) {
@@ -1123,6 +1287,11 @@ void DrawPanel() {
 			else if (i == 2 && j == 1) {
 				DoNumberBox(&panelKey, "Panel Key", i, j, 0);
 				DoNumberBox(&panicKey, "Panic Key", i, j, 1);
+
+				DoButtonBox("Pistol", 0, i, j, 3);
+				DoButtonBox("Rifle", 1, i, j, 4);
+				DoButtonBox("Sniper", 2, i, j, 5);
+				DoButtonBox("One Tap", 3, i, j, 6);
 			}
 		}
 	}
@@ -1218,7 +1387,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		ReadProcessMemory(handle, (LPVOID)(ClientState + DwMaxPlayer), &maxPlayer, sizeof(int), NULL);
 
 		if(isRunning) {
-			if (isRcs && isRcsCross) {
+			if (isRcs[activeMode] && isRcsCross) {
 				float CrosshairPos2ScreenX = SWidth / 2;
 				float CrosshairPos2ScreenY = SHeight / 2;
 				float punch[3];
@@ -1227,7 +1396,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				float Punch2ScreenY = (SHeight / 178.f) * (punch[1] * 2);
 				CrosshairPos2ScreenX -= Punch2ScreenY;
 				CrosshairPos2ScreenY += Punch2ScreenX;
-				int CrossColor[3] = { 122, 122, 0 };
+				int CrossColor[3] = { 153, 153, 0 };
 				DrawCross(CrosshairPos2ScreenX, CrosshairPos2ScreenY, 6, 6, 2, CrossColor);
 			}
 			if (isInfo) {
@@ -1300,20 +1469,15 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 								if (!isWallFriendly && EntityList.GetTeam(j) == NewPlayer.GetTeam()) {
 									color[0] = 0;
 									color[1] = 0;
-									color[2] = 255;
-								}
-								else if (EntityList.GetBaseEntity(j) == EntityList.GetBaseEntity(NewPlayer.GetCrosshairId())) {
-									color[0] = 127;
-									color[1] = 0;
-									color[2] = 0;
+									color[2] = 153;
 								}
 								else if (bsp.Visible(me3, en3)) {
 									color[0] = 0;
-									color[1] = 255;
+									color[1] = 153;
 									color[2] = 0;
 								}
 								else {
-									color[0] = 255;
+									color[0] = 153;
 									color[1] = 0;
 									color[2] = 0;
 								}
@@ -1370,7 +1534,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 								for (int b = 0; b < boneCount; b++)
 								{
 									EntityList.GetBonePosition(j, bone3D[b], b);
-									if (fabs(playerPosition[0] - bone3D[b][0]) > 100 || fabs(playerPosition[1] - bone3D[b][1]) > 100 || fabs(playerPosition[2] - bone3D[b][2]) > 100 || !WorldToScreen(bone3D[b], bone2D[b])) {
+									if (fabs(playerPosition[0] - bone3D[b][0]) > 50 || fabs(playerPosition[1] - bone3D[b][1]) > 50 || fabs(playerPosition[2] - bone3D[b][2]) > 90 || !WorldToScreen(bone3D[b], bone2D[b])) {
 										bone2D[b][0] = -1;
 										bone2D[b][1] = -1;
 										continue;
@@ -1408,29 +1572,30 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 									if (parentId == -1)
 										continue;
+									if (bone2D[b][0] >= 0.0f && bone2D[b][1] >= 0.0f) {
+										if (isWallExternal)
+											DrawSnaplines(bone2D[b][0], bone2D[b][1], bone2D[parentId][0], bone2D[parentId][1]);
 
-									if (isWallExternal && bone2D[b][0] != -1 && bone2D[b][1] != -1)
-										DrawSnaplines(bone2D[b][0], bone2D[b][1], bone2D[parentId][0], bone2D[parentId][1]);
+										if (bone2D[b][0] < boxPos[0])
+											boxPos[0] = bone2D[b][0];
+										else if (bone2D[parentId][0] < boxPos[0] && bone2D[parentId][0]>0.0f)
+											boxPos[0] = bone2D[parentId][0];
 
-									if (bone2D[b][0] < boxPos[0] && bone2D[b][0]>0.0f)
-										boxPos[0] = bone2D[b][0];
-									else if (bone2D[parentId][0] < boxPos[0] && bone2D[parentId][0]>0.0f)
-										boxPos[0] = bone2D[parentId][0];
+										if (bone2D[b][0] > boxPos[2])
+											boxPos[2] = bone2D[b][0];
+										else if (bone2D[parentId][0] > boxPos[2])
+											boxPos[2] = bone2D[parentId][0];
 
-									if (bone2D[b][0] > boxPos[2])
-										boxPos[2] = bone2D[b][0];
-									else if (bone2D[parentId][0] > boxPos[2])
-										boxPos[2] = bone2D[parentId][0];
+										if (bone2D[b][1] < boxPos[1] && bone2D[b][1]>0.0f)
+											boxPos[1] = bone2D[b][1];
+										else if (bone2D[parentId][1] < boxPos[1] && bone2D[parentId][1]>0.0f)
+											boxPos[1] = bone2D[parentId][1];
 
-									if (bone2D[b][1] < boxPos[1] && bone2D[b][1]>0.0f)
-										boxPos[1] = bone2D[b][1];
-									else if (bone2D[parentId][1] < boxPos[1] && bone2D[parentId][1]>0.0f)
-										boxPos[1] = bone2D[parentId][1];
-
-									if (bone2D[b][1] > boxPos[3])
-										boxPos[3] = bone2D[b][1];
-									else if (bone2D[parentId][1] > boxPos[3])
-										boxPos[3] = bone2D[parentId][1];
+										if (bone2D[b][1] > boxPos[3])
+											boxPos[3] = bone2D[b][1];
+										else if (bone2D[parentId][1] > boxPos[3])
+											boxPos[3] = bone2D[parentId][1];
+									}
 								}
 								if (isWallFriendly || EntityList.GetTeam(j) != NewPlayer.GetTeam()) {
 									float PlayerPos[3];
@@ -1441,14 +1606,14 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 
 									if (WorldToScreen(EnemyPos, EnemyXY))
 									{
-										int BoxColor[3] = { 254, 0, 0 };
+										int BoxColor[3] = { 153, 0, 0 };
 										float HealthBarWidth = (boxPos[2] - boxPos[0]) / 5;
 										float HealthBarHeight = (boxPos[3] - boxPos[1]) / 5;
 										if (isBox)
 											DrawBox(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight, boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, BoxColor);
 										if (isHealth) {
-											int HealthBarBackColor[3] = { 254, 0, 0 };
-											int HealthBarColor[3] = { 0, 254, 0 };
+											int HealthBarBackColor[3] = { 153, 0, 0 };
+											int HealthBarColor[3] = { 0, 153, 0 };
 											float HealthHeight = ((boxPos[3] + HealthBarHeight) - (boxPos[1] - HealthBarHeight))*((100.0f - EntityList.GetHealth(j)) / 100.0f);
 											DrawBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, BoxColor);
 											DrawFilledBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, HealthBarBackColor);
@@ -1466,7 +1631,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 													name[i] = 0;
 											}
 
-											glColor3f(204, 204, 0);
+											glColor3f(153, 153, 0);
 											glRasterPos2f(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight - 4);
 											glCallLists(32, GL_UNSIGNED_BYTE, name);
 										}
@@ -1673,147 +1838,6 @@ DWORD WINAPI RedrawLoop(LPVOID PARAMS)
 	}
 	ExitThread(0);
 }
-
-/*struct Ray_t
-{
-	Vector m_Start; float w1;
-	Vector m_Delta; float w2;
-	Vector m_StartOffset; float w3;
-	Vector m_Extents; float w4;
-
-	bool m_IsRay;
-	bool m_IsSwept;
-
-	void Init(Vector const& start, Vector const& end)
-	{
-		VectorSubtract(end, start, m_Delta);
-
-		m_IsSwept = (m_Delta.LengthSqr() != 0);
-
-		VectorClear(m_Extents);
-		m_IsRay = true;
-
-		VectorClear(m_StartOffset);
-		VectorCopy(start, m_Start);
-	}
-
-	void Init(Vector const& start, Vector const& end, Vector const& mins, Vector const& maxs)
-	{
-		VectorSubtract(end, start, m_Delta);
-
-		m_IsSwept = (m_Delta.LengthSqr() != 0);
-
-		VectorSubtract(maxs, mins, m_Extents);
-		m_Extents *= 0.5f;
-		m_IsRay = (m_Extents.LengthSqr() < 1e-6);
-
-		VectorAdd(mins, maxs, m_StartOffset);
-		m_StartOffset *= 0.5f;
-		VectorAdd(start, m_StartOffset, m_Start);
-		m_StartOffset *= -1.f;
-	}
-};
-
-struct csurface_t
-{
-	const char *name;
-	short surfaceProps;
-	unsigned short flags;
-};
-
-struct cplane_t
-{
-	Vector normal;
-	float dist;
-	byte type;
-	byte signbits;
-	byte pad[2];
-};
-
-class CBaseTrace
-{
-public:
-	Vector startpos;
-	Vector endpos;
-	cplane_t plane;
-	float fraction;
-	int contents;
-	unsigned short dispFlags;
-	bool allsolid;
-	bool startsolid;
-};
-
-enum TraceType_t
-{
-	TRACE_EVERYTHING = 0,
-	TRACE_WORLD_ONLY,				// NOTE: This does *not* test static props!!!
-	TRACE_ENTITIES_ONLY,			// NOTE: This version will *not* test static props
-	TRACE_EVERYTHING_FILTER_PROPS,	// NOTE: This version will pass the IHandleEntity for props through the filter, unlike all other filters
-};
-
-
-class CGameTrace : public CBaseTrace
-{
-public:
-	float fractionleftsolid;
-	csurface_t surface;
-	int hitgroup;
-	short physicsbone;
-	DWORD m_pEnt;
-	int hitbox;
-};
-
-typedef CGameTrace trace_t;
-
-class ITraceFilter
-{
-public:
-	virtual bool            ShouldHitEntity(DWORD pBaseEntity, int mask) = 0;
-	virtual TraceType_t            GetTraceType() const = 0;
-};
-
-class CTraceFilter : public ITraceFilter
-{
-public:
-	CTraceFilter()
-	{
-		m_pPassEnt = NewPlayer.GetDwLocalPlayer();
-	}
-
-	bool ShouldHitEntity(DWORD pHandleEntity, int contentsMask) {
-		return NewPlayer.GetDwLocalPlayer() != m_pPassEnt;
-	}
-	TraceType_t GetTraceType() const {
-		return TRACE_EVERYTHING; 
-	}
-
-	DWORD m_pPassEnt;
-};
-
-class IEngineTrace
-{
-public:
-	virtual void TraceRay(const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace) = 0;
-};
-
-IEngineTrace *enginetrace;
-
-bool IsVisible(Vector Src, Vector Dst)
-{
-	Ray_t ray;
-	ray.Init(Src, Dst);
-
-	trace_t tr;
-	CTraceFilter filter;
-
-	//std::cout << std::hex << (enginetrace->TraceRay) << std::endl;
-	typedef int TraceRay(const Ray_t &ray, unsigned int fMask, ITraceFilter *pTraceFilter, trace_t *pTrace);
-	TraceRay* f = (TraceRay*)(Mem.Read<DWORD>(modClient.dwBase + 0x1C1226b0 + 32/*)));
-	f(ray, 0x4600400B, &filter, &tr);
-
-	return (tr.fraction > 0.97f); //97
-
-}*/
 
 void click() {
 	mouse_event(MOUSEEVENTF_LEFTDOWN, NULL, NULL, NULL, NULL);
@@ -2157,14 +2181,59 @@ void loadMap() {
 	bsp.LoadBSP(tmp);
 }
 
+int weaponType(int weaponId) {
+
+	switch (weaponId)
+	{
+	case 1: //one tap
+	case 25: //shotguns
+	case 27:
+	case 29:
+	case 35:
+	case 40: //scout
+		return 3;
+	case 2: //pistols
+	case 3:
+	case 4:
+	case 30:
+	case 32:
+	case 36:
+	case 61:
+	case 63:
+		return 0;
+	case 7: //rifles
+	case 8:
+	case 10:
+	case 13:
+	case 14:
+	case 16:
+	case 17:
+	case 19:
+	case 24:
+	case 26:
+	case 28:
+	case 33:
+	case 34:
+	case 39:
+	case 60:
+	case 64:
+		return 1;
+	case 9: //awp
+	case 11: //auto
+	case 38:
+		return 2;
+	}
+	return -1;
+}
+
 int main() {
 	std::cout << "TekHak\nCounter Strike: Global Offensive Multi-Hack\nVersion " << version << "\nDeveloped by Kevin Park\n" << std::endl;
 	
 	char motd[128];
-	/*if (!login(motd)) {
+	if (!login(motd)) {
 		Sleep(2500);
 		exit(2);
-	}*/
+	}
 
 	resetConfig();
 	loadConfig();
@@ -2247,7 +2316,7 @@ int main() {
 	std::thread V1(v1);
 	std::thread V2(v2);
 
-	int inGame;
+	int inGame, currentWeaponId;
 	DWORD ClientState = Mem.Read<DWORD>(modEngine.dwBase + DwEnginePointer);
 	while (!isPanic) {
 		ReadProcessMemory(handle, (LPVOID)(ClientState + DwInGame), &inGame, sizeof(int), NULL); //6: In Game 3: Loading
@@ -2257,6 +2326,7 @@ int main() {
 			isRunning = true;
 		} else if (inGame != 6 && isRunning) {
 			isRunning = false;
+			activeMode = -1;
 			Sleep(5000);
 		}
 		if (keyScanInProgess) {
@@ -2274,6 +2344,9 @@ int main() {
 			while (GetAsyncKeyState(panelKey) & 0x8000)
 				Sleep(1);
 		}
+		if (isRunning && (currentWeaponId = weaponType(NewPlayer.GetWeaponId())) != activeMode)
+			activeMode = currentWeaponId;
+
 		if (isBhopToggle && GetAsyncKeyState(bhopToggleKey) & 0x8000)
 		{
 			isBhop = !isBhop;
@@ -2282,19 +2355,19 @@ int main() {
 		}
 		if (isTriggerToggle && GetAsyncKeyState(triggerToggleKey) & 0x8000)
 		{
-			isTrigger = !isTrigger;
+			isTrigger[activeMode] = !isTrigger[activeMode];
 			while(GetAsyncKeyState(triggerToggleKey) & 0x8000)
 				Sleep(1);
 		}
 		if (isRcsToggle && GetAsyncKeyState(rcsToggleKey) & 0x8000)
 		{
-			isRcs = !isRcs;
+			isRcs[activeMode] = !isRcs[activeMode];
 			while (GetAsyncKeyState(rcsToggleKey) & 0x8000)
 				Sleep(1);
 		}
 		if (isAimbotToggle && GetAsyncKeyState(aimbotToggleKey) & 0x8000)
 		{
-			isAimbot = !isAimbot;
+			isAimbot[activeMode] = !isAimbot[activeMode];
 			while (GetAsyncKeyState(aimbotToggleKey) & 0x8000)
 				Sleep(1);
 		}
@@ -2358,7 +2431,7 @@ void v0() {
 	while (true) {
 		if (isPanic)
 			break;
-		if (!isRunning || panelEnabled || (!isBhop && !isFlash && !isTrigger)) {
+		if (!isRunning || panelEnabled || (!isBhop && !isFlash && !isTrigger[activeMode])) {
 			Sleep(250);
 			continue;
 		}
@@ -2374,7 +2447,7 @@ void v0() {
 				keybd_event(bhopGameBind, MapVirtualKey(bhopGameBind, 0), KEYEVENTF_KEYUP, 0);
 			}
 		}
-		if (isTrigger) {
+		if (isTrigger[activeMode]) {
 			int MyTeam = NewPlayer.GetTeam();
 			int CrossHairID = NewPlayer.GetCrosshairId();
 			DWORD Enemy = Mem.Read<DWORD>(modClient.dwBase + DwEntityList + (CrossHairID * 0x10)); // CH = Crosshair.
@@ -2383,7 +2456,7 @@ void v0() {
 
 			if ((!isTriggerHold || GetAsyncKeyState(triggerHoldKey) & 0x8000) && (isTriggerFriendly || MyTeam != EnemyTeam) && NewPlayer.GetWeaponClip() > 0 && EnemyHealth > 0 && EnemyHealth <= 100)
 			{
-				Sleep(triggerDelay);
+				Sleep(triggerDelay[activeMode]);
 				click();
 			}
 		}
@@ -2391,7 +2464,7 @@ void v0() {
 	}
 }
 
-/*void MouseMove(int x, int y)
+void MouseMove(double x, double y)
 {
 	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
 	double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
@@ -2403,7 +2476,7 @@ void v0() {
 	Input.mi.dx = fx;
 	Input.mi.dy = fy;
 	::SendInput(1, &Input, sizeof(INPUT));
-}*/
+}
 
 void v1() {
 	float oldAng[2];
@@ -2412,9 +2485,9 @@ void v1() {
 			break;
 		else if (!isRunning || panelEnabled)
 			Sleep(250);
-		else if (!isAimbot && !isRage) {
+		else if (!isAimbot[activeMode] && !isRage) {
 			int shotsFired = NewPlayer.GetShotsFired();
-			if (isRcs && shotsFired > 1)
+			if (isRcs[activeMode] && shotsFired > 1)
 			{
 				float MyPunch[3];
 				NewPlayer.GetPunch(MyPunch);
@@ -2452,6 +2525,7 @@ void v1() {
 				float boneScreen[2];
 				float boneWorld[3];
 				float myWorld[3];
+				float randomization = (float)rand() / RAND_MAX * (aimRandom[activeMode] / 10.0f * 2) - aimRandom[activeMode] / 10.0f;
 				if (!EntityList.IsDormant(i) && !EntityList.IsDead(i)) {
 					char chModel[64];
 					DWORD model = Mem.Read<DWORD>(EntityList.GetBaseEntity(i) + 0x6C);
@@ -2468,11 +2542,14 @@ void v1() {
 					if ((!imT && !imCT) || (!enT && !enCT))
 						continue;
 
-					EntityList.GetBonePosition(i, boneWorld, 6);
+					EntityList.GetBonePosition(i, boneWorld, boneId[aimBone[activeMode]]);
+					boneWorld[0] += randomization;
+					boneWorld[1] += randomization;
+					boneWorld[2] += randomization;
 					NewPlayer.GetPosition(myWorld);
 					myWorld[2] += NewPlayer.GetViewOrigin();
 					worldToAngle(boneWorld, myWorld, boneScreen);
-					if (isRcs) {
+					if (isRcs[activeMode]) {
 						float MyPunch[3];
 						NewPlayer.GetPunch(MyPunch);
 						boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
@@ -2482,7 +2559,7 @@ void v1() {
 					float currentAng[3];
 					NewPlayer.GetAngles(currentAng);
 
-					if (isRage && !isTrigger && !isAimbot) {
+					if (isRage && !isTrigger[activeMode] && !isAimbot[activeMode]) {
 						if (bsp.Visible(myWorld, boneWorld) && EntityList.GetTeam(i) != 0 && (imT != enT || isRageFriendly) && !EntityList.IsDormant(i) && !EntityList.IsDead(i)) {
 							NewPlayer.SetAngles(boneScreen);
 							Sleep(5);
@@ -2495,7 +2572,7 @@ void v1() {
 									myWorld[2] += NewPlayer.GetViewOrigin();
 									worldToAngle(boneWorld, myWorld, boneScreen);
 
-									if (isRcs) {
+									if (isRcs[activeMode]) {
 										float MyPunch[3];
 										NewPlayer.GetPunch(MyPunch);
 										boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
@@ -2509,12 +2586,16 @@ void v1() {
 							}
 						}
 					}
-					else if (isAimbot) {
+					else if (isAimbot[activeMode]) {
 						if (fabs(boneScreen[0] - currentAng[0]) < 2.0f && fabs(boneScreen[1] - currentAng[1]) < 1.0f && (isAimWall || bsp.Visible(myWorld, boneWorld)) && ((isAimbotFriendly && NewPlayer.GetTeam() == EntityList.GetTeam(i) && imT == enT) || (imT != enT && NewPlayer.GetTeam() != EntityList.GetTeam(i)))) {
-							float val0 = (boneScreen[0] - currentAng[0]) / (aimSmooth + 1), val1 = (boneScreen[1] - currentAng[1]) / (aimSmooth + 1);
-							int aim = aimSmooth;
-							while (fabs(boneScreen[0] - currentAng[0]) < 10.0f && fabs(boneScreen[1] - currentAng[1]) < 10.0f &&!EntityList.IsDead(i) && !EntityList.IsDormant(i) && (((isHoldAim && GetAsyncKeyState(aimbotHoldKey) & 0x8000)) || (NewPlayer.GetShotsFired() > 0 && NewPlayer.GetWeaponClip() > 0)) && (isAimWall || bsp.Visible(myWorld, boneWorld))) {
-								EntityList.GetBonePosition(i, boneWorld, boneId[aimBone]);
+							float val0 = (boneScreen[0] - currentAng[0]) / (aimSmooth[activeMode] + 1), val1 = (boneScreen[1] - currentAng[1]) / (aimSmooth[activeMode] + 1);
+							int aim = aimSmooth[activeMode];
+							while (fabs(boneScreen[0] - currentAng[0]) < 10.0f && fabs(boneScreen[1] - currentAng[1]) < 10.0f &&!EntityList.IsDead(i) && !EntityList.IsDormant(i) && (NewPlayer.GetWeaponClip() > 0 && ((isHoldAim[activeMode] && GetAsyncKeyState(aimbotHoldKey) & 0x8000) || NewPlayer.GetShotsFired() > 0) && (isAimWall || bsp.Visible(myWorld, boneWorld)))) {
+								EntityList.GetBonePosition(i, boneWorld, boneId[aimBone[activeMode]]);
+								NewPlayer.GetAngles(currentAng);
+								boneWorld[0] += randomization;
+								boneWorld[1] += randomization;
+								boneWorld[2] += randomization;
 								NewPlayer.GetPosition(myWorld);
 								myWorld[2] += NewPlayer.GetViewOrigin();
 								worldToAngle(boneWorld, myWorld, boneScreen);
@@ -2523,18 +2604,39 @@ void v1() {
 									boneScreen[1] -= val1*aim;
 									aim--;
 								}
-								if (isRcs) {
+								if (isRcs[activeMode]) {
 									float MyPunch[3];
 									NewPlayer.GetPunch(MyPunch);
 									boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
 									boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
 									angleFix(boneScreen);
 								}
-								NewPlayer.SetAngles(boneScreen);
+								if (isAimLegit) {
+									float sensX = fabs(boneScreen[1] - currentAng[1]) / 2, sensY = (boneScreen[0] - currentAng[0]) / 2;
+									if (sensX > 10.0f)
+										continue;
+									if (sensX < 0.01f)
+										sensX = 0.01f;
+									if (sensY < 0.01f && sensY > 0.0f)
+										sensY = 0.01f;
+									else if (sensY > -0.01f && sensY < 0.0f)
+										sensY = -0.01f;
+
+									if (currentAng[1] > boneScreen[1] && currentAng[1] - boneScreen[1] < 180)
+										MouseMove(sensX, sensY);
+									else if (currentAng[1] < boneScreen[1] && boneScreen[1] - currentAng[1] < 180)
+										MouseMove(-sensX, sensY);
+									else if (currentAng[1] > boneScreen[1])
+										MouseMove(-sensX, sensY);
+									else if (currentAng[1] < boneScreen[1])
+										MouseMove(sensX, sensY);
+								}
+								else
+									NewPlayer.SetAngles(boneScreen);
 								Sleep(5);
-								if (aim == 0 && isAimShoot && !isTrigger) {
+								if ((aim == 0 || (isAimLegit && fabs(boneScreen[1] - currentAng[1]) < 0.01f && fabs(boneScreen[0] - currentAng[0]) < 0.01f)) && isAimShoot[activeMode] && !isTrigger[activeMode]) {
 									click();
-									aim--;
+									aim = -1;
 								}
 							}
 						}
