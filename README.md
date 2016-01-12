@@ -19,3 +19,13 @@ Configuration
 - Bunnyhop Setup
   1. Options -> Keyboard / Mouse -> Bindings
   2. Jump: Alt
+
+Instruction
+1. Launch Counter-Strike: Global Offensive first
+2. Run the hack (TekHak.exe)
+3. Bring up Steam Overlay (Shift+Tab)
+4. Press "/" key to open up the configuration panel
+5. Configure to your wishes
+6. Press "/" key again to close the panel
+7. Have fun!
+8. Press "Home" key to terminate the hack
