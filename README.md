@@ -4,7 +4,7 @@ Counter-Strike: Global Offensive Hack
 If you get an error saying that "MSCVCP140.dll" is missing, please download x86 version of following
 https://www.microsoft.com/en-us/download/details.aspx?id=48145
 
-Configuration
+Configurations
 - Windows Mouse Setup
   1. Control Panel -> Hardware and Sound -> Mouse -> Pointer Options
   2. Make sure the pointer speed is set to 6/11
@@ -20,7 +20,7 @@ Configuration
   1. Options -> Keyboard / Mouse -> Bindings
   2. Jump: Alt
 
-Instruction
+Instructions
 - Launch Counter-Strike: Global Offensive first
 - Run the hack (TekHak.exe)
 - Bring up Steam Overlay (Shift+Tab)
