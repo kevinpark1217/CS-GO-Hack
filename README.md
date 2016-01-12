@@ -26,6 +26,7 @@ Instructions
 - Bring up Steam Overlay (Shift+Tab)
 - Press "/" key to open up the configuration panel
 - Configure to your wishes
+- If you have configured bunnyhop settings, toggle it on, and hold "Space" keys to bhop/jump
 - Press "/" key again to close the panel
 - Have fun!
 - Press "Home" key to terminate the hack
