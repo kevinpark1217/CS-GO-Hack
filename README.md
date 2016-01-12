@@ -21,11 +21,11 @@ Configuration
   2. Jump: Alt
 
 Instruction
-1. Launch Counter-Strike: Global Offensive first
-2. Run the hack (TekHak.exe)
-3. Bring up Steam Overlay (Shift+Tab)
-4. Press "/" key to open up the configuration panel
-5. Configure to your wishes
-6. Press "/" key again to close the panel
-7. Have fun!
-8. Press "Home" key to terminate the hack
+- Launch Counter-Strike: Global Offensive first
+- Run the hack (TekHak.exe)
+- Bring up Steam Overlay (Shift+Tab)
+- Press "/" key to open up the configuration panel
+- Configure to your wishes
+- Press "/" key again to close the panel
+- Have fun!
+- Press "Home" key to terminate the hack
