@@ -8,9 +8,6 @@ Configuration
 - Windows Mouse Setup
   1. Control Panel -> Hardware and Sound -> Mouse -> Pointer Options
   2. Make sure the pointer speed is set to 6/11
-  
-    | | | | | | | | | | |
-              ^
   3. Uncheck "Enhance pointer precision"
 - Game Mouse Setup
   1. Options -> Keyboard / Mouse
