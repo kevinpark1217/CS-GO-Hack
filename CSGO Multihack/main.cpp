@@ -27,7 +27,7 @@ PModule modEngine, modClient;
 HWND csgo;
 HANDLE handle;
 BSP bsp;
-const char* version = "2.7.4";
+const char* version = "2.8.5";
 
 DWORD DwLocalPlayer, DwEntityList, DwEnginePointer, DwViewAngle, DwGlow, DwViewMatrix, DwRadarBase, DwIGameResources;
 
@@ -73,6 +73,18 @@ struct
 	{
 		DWORD DwLocalPlayer = GetDwLocalPlayer();
 		return Mem.Read<int>(DwLocalPlayer + DwFlags);
+	}
+
+	bool IsDead()
+	{
+		DWORD DwLocalPlayer = GetDwLocalPlayer();
+		return Mem.Read<bool>(DwLocalPlayer + DwLifeState);
+	}
+
+	bool IsScoped()
+	{
+		DWORD DwLocalPlayer = GetDwLocalPlayer();
+		return Mem.Read<bool>(DwLocalPlayer + DwScoped);
 	}
 
 	int GetTeam()
@@ -138,7 +150,7 @@ struct
 
 	int GetWeaponId() {
 		DWORD PlayerWeapon = GetDwWeapon();
-		return Mem.Read<int>(PlayerWeapon + DwWeaponId/* + 0x4*/);
+		return Mem.Read<int>(PlayerWeapon + DwWeaponId + 0xC);
 	}
 
 	int GetWeaponClip() {
@@ -161,19 +173,9 @@ struct
 		Mem.Read<float*>(BaseEntity + DwVecOrigin, true, 3, Position);
 	}
 
-	void GetPosition(DWORD BaseEntity, float* Position)
-	{
-		Mem.Read<float*>(BaseEntity + DwVecOrigin, true, 3, Position);
-	}
-
 	bool IsDead(int PlayerNumber)
 	{
 		DWORD BaseEntity = GetBaseEntity(PlayerNumber);
-		return Mem.Read<bool>(BaseEntity + DwLifeState);
-	}
-
-	bool IsDead(DWORD BaseEntity)
-	{
 		return Mem.Read<bool>(BaseEntity + DwLifeState);
 	}
 
@@ -183,19 +185,9 @@ struct
 		return Mem.Read<bool>(BaseEntity + DwIsDormant);
 	}
 
-	bool IsDormant(DWORD BaseEntity)
-	{
-		return Mem.Read<bool>(BaseEntity + DwIsDormant);
-	}
-
 	int GetTeam(int PlayerNumber)
 	{
 		DWORD BaseEntity = GetBaseEntity(PlayerNumber);
-		return Mem.Read<int>(BaseEntity + DwTeamNumber);
-	}
-
-	int GetTeam(DWORD BaseEntity)
-	{
 		return Mem.Read<int>(BaseEntity + DwTeamNumber);
 	}
 
@@ -205,37 +197,15 @@ struct
 		return Mem.Read<int>(BaseEntity + DwHealth);
 	}
 
-	int GetHealth(DWORD BaseEntity)
-	{
-		return Mem.Read<int>(BaseEntity + DwHealth);
-	}
-
 	void GetVelocity(int PlayerNumber, float* Buffer)
 	{
 		DWORD BaseEntity = GetBaseEntity(PlayerNumber);
 		Mem.Read<float*>(BaseEntity + DwVecVelocity, true, 3, Buffer);
 	}
 
-	void GetVelocity(DWORD BaseEntity, float* Buffer)
-	{
-		Mem.Read<float*>(BaseEntity + DwVecVelocity, true, 3, Buffer);
-	}
-
 	bool isSpotted(int PlayerNumber) {
 		DWORD BaseEntity = GetBaseEntity(PlayerNumber);
 		return Mem.Read<bool>(BaseEntity + DwSpotted);
-	}
-
-	bool isSpotted(DWORD BaseEntity) {
-		return Mem.Read<bool>(BaseEntity + DwSpotted);
-	}
-
-	void GetBonePosition(DWORD BaseEntity, float* BonePosition, int TargetBone)
-	{
-		DWORD BoneMatrix = Mem.Read<DWORD>(BaseEntity + DwBoneMatrix);
-		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x0C, true, 1, &BonePosition[0]);
-		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x1C, true, 1, &BonePosition[1]);
-		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x2C, true, 1, &BonePosition[2]);
 	}
 
 	void GetBonePosition(int PlayerNumber, float* BonePosition, int TargetBone)
@@ -261,7 +231,7 @@ struct
 		DWORD BaseEntity = GetBaseEntity(PlayerNumber);
 		DWORD PlayerWeaponIndex = (Mem.Read<DWORD>(BaseEntity + DwActiveWeapon)) & 0xfff;
 		DWORD PlayerWeapon = Mem.Read<DWORD>(modClient.dwBase + DwEntityList + (PlayerWeaponIndex * 0x10) - 0x10);
-		return Mem.Read<int>(PlayerWeapon + DwWeaponId/* + 0x4*/);
+		return Mem.Read<int>(PlayerWeapon + DwWeaponId + 0xC);
 	}
 
 	int GetResourceTeam(int PlayerNumber) {
@@ -311,6 +281,34 @@ struct
 
 }EntityList;
 
+struct
+{
+
+	bool IsDead(DWORD BaseEntity)
+	{
+		return Mem.Read<bool>(BaseEntity + DwLifeState);
+	}
+
+	bool IsDormant(DWORD BaseEntity)
+	{
+		return Mem.Read<bool>(BaseEntity + DwIsDormant);
+	}
+
+	int GetTeam(DWORD BaseEntity)
+	{
+		return Mem.Read<int>(BaseEntity + DwTeamNumber);
+	}
+
+	void GetBonePosition(DWORD BaseEntity, float* BonePosition, int TargetBone)
+	{
+		DWORD BoneMatrix = Mem.Read<DWORD>(BaseEntity + DwBoneMatrix);
+		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x0C, true, 1, &BonePosition[0]);
+		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x1C, true, 1, &BonePosition[1]);
+		Mem.Read<float*>(BoneMatrix + 0x30 * TargetBone + 0x2C, true, 1, &BonePosition[2]);
+	}
+
+} BaseList;
+
 bool isPanic = false;
 
 bool isTrigger[4], isTriggerToggle, isTriggerFriendly, isTriggerHold;
@@ -320,7 +318,8 @@ bool isRcs[4], isRcsToggle, isRcsCross;
 int rcsToggleKey, rcsAmount;
 
 bool isAimbot[4], isAimbotToggle, isAimbotFriendly, isHoldAim[4], isAimWall, isAimShoot[4], isAimLegit;
-int aimbotToggleKey, aimBone[4], aimbotHoldKey, aimSmooth[4], aimRandom[4];
+int aimbotToggleKey, aimBone[4], aimbotHoldKey, aimSmooth[4], aimRandom[4], aimWidth, aimHeight;
+float aimSensX, aimSensY, aimSensScopeX, aimSensScopeY;
 
 bool isBhop, isBhopToggle;
 int bhopToggleKey, bhopGameBind, bhopJumpBind;
@@ -331,16 +330,13 @@ int wallToggleKey;
 bool isRadar, isRadarToggle, isFlash, isFlashToggle, isInfo, isInfoToggle;
 int radarToggleKey, flashToggleKey, infoToggleKey, infoX, infoY;
 
-bool isRage, isRageToggle, isRageFriendly;
-int rageToggleKey;
-
 int panelKey, panicKey;
 
-bool isRunning, panelEnabled;
+bool isRunning = false, panelEnabled = false, isAimbotFix, isDead = false;
 int activeMode = -1, editMode = 0;
 
 void loadConfig() {
-	std::ifstream config("config.ini");
+	std::ifstream config("TekHak.ini");
 	if (config.is_open())
 	{
 		std::string line;
@@ -440,6 +436,10 @@ void loadConfig() {
 				aimRandom[2] = stoi(line.substr(line.find(":") + 1));
 			else if (line.find("aimRandom3:") == 0)
 				aimRandom[3] = stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimWidth:") == 0)
+				aimWidth= stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimHeight:") == 0)
+				aimHeight = stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimShoot0:") == 0)
 				isAimShoot[0] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimShoot1:") == 0)
@@ -450,6 +450,14 @@ void loadConfig() {
 				isAimShoot[3] = (bool)stoi(line.substr(line.find(":") + 1));
 			else if (line.find("isAimLegit:") == 0)
 				isAimLegit = (bool)stoi(line.substr(line.find(":") + 1));
+			else if (line.find("aimSensX:") == 0)
+				aimSensX = stof(line.substr(line.find(":") + 1));
+			else if (line.find("aimSensY:") == 0)
+				aimSensY = stof(line.substr(line.find(":") + 1));
+			else if (line.find("aimSensScopeX:") == 0)
+				aimSensScopeX = stof(line.substr(line.find(":") + 1));
+			else if (line.find("aimSensScopeY:") == 0)
+				aimSensScopeY = stof(line.substr(line.find(":") + 1));
 			//Bhop
 			else if (line.find("isBhop:") == 0)
 				isBhop = (bool)stoi(line.substr(line.find(":") + 1));
@@ -509,15 +517,6 @@ void loadConfig() {
 				infoX = stoi(line.substr(line.find(":") + 1));
 			else if (line.find("infoY:") == 0)
 				infoY = stoi(line.substr(line.find(":") + 1));
-			//Rage
-			else if (line.find("isRage:") == 0)
-				isRage = (bool)stoi(line.substr(line.find(":") + 1));
-			else if (line.find("isRageToggle:") == 0)
-				isRageToggle = (bool)stoi(line.substr(line.find(":") + 1));
-			else if (line.find("rageToggleKey:") == 0)
-				rageToggleKey = stoi(line.substr(line.find(":") + 1));
-			else if (line.find("isRageFriendly:") == 0)
-				isRageFriendly = (bool)stoi(line.substr(line.find(":") + 1));
 			//Setting
 			else if (line.find("panelKey:") == 0)
 				panelKey = stoi(line.substr(line.find(":") + 1));
@@ -528,7 +527,7 @@ void loadConfig() {
 	}
 }
 void saveConfig() {
-	std::ofstream config("config.ini");
+	std::ofstream config("TekHak.ini");
 	if (config.is_open())
 	{
 		config << "isTrigger0:" << isTrigger[0] << "\n";
@@ -579,11 +578,17 @@ void saveConfig() {
 		config << "aimRandom1:" << aimRandom[1] << "\n";
 		config << "aimRandom2:" << aimRandom[2] << "\n";
 		config << "aimRandom3:" << aimRandom[3] << "\n";
+		config << "aimWidth:" << aimWidth << "\n";
+		config << "aimHeight:" << aimHeight << "\n";
 		config << "isAimShoot0:" << isAimShoot[0] << "\n";
 		config << "isAimShoot1:" << isAimShoot[1] << "\n";
 		config << "isAimShoot2:" << isAimShoot[2] << "\n";
 		config << "isAimShoot3:" << isAimShoot[3] << "\n";
 		config << "isAimLegit:" << isAimLegit << "\n";
+		config << "aimSensX:" << aimSensX << "\n";
+		config << "aimSensY:" << aimSensY << "\n";
+		config << "aimSensScopeX:" << aimSensScopeX << "\n";
+		config << "aimSensScopeY:" << aimSensScopeY << "\n";
 
 		config << "isBhop:" << isBhop << "\n";
 		config << "isBhopToggle:" << isBhopToggle << "\n";
@@ -616,11 +621,6 @@ void saveConfig() {
 		config << "infoX:" << infoX << "\n";
 		config << "infoY:" << infoY << "\n";
 
-		config << "isRage:" << isRage << "\n";
-		config << "isRageToggle:" << isRageToggle << "\n";
-		config << "rageToggleKey:" << rageToggleKey << "\n";
-		config << "isRageFriendly:" << isRageFriendly << "\n";
-
 		config << "panelKey:" << panelKey << "\n";
 		config << "panicKey:" << panicKey << "\n";
 
@@ -649,7 +649,7 @@ void resetConfig() {
 	isRcsToggle = false;
 	rcsToggleKey = 98;
 	rcsAmount = 99;
-	isRcsCross = false;
+	isRcsCross = true;
 
 	isAimbot[0] = true;
 	isAimbot[1] = true;
@@ -668,21 +668,27 @@ void resetConfig() {
 	isHoldAim[3] = true;
 	isAimWall = false;
 	aimbotHoldKey = 5;
-	aimSmooth[0] = 25;
-	aimSmooth[1] = 40;
+	aimSmooth[0] = 15;
+	aimSmooth[1] = 25;
 	aimSmooth[2] = 20;
-	aimSmooth[3] = 20;
+	aimSmooth[3] = 15;
 	aimRandom[0] = 25;
 	aimRandom[1] = 30;
 	aimRandom[2] = 35;
 	aimRandom[3] = 20;
+	aimWidth = 50;
+	aimHeight = 100;
 	isAimShoot[0] = true;
 	isAimShoot[1] = false;
 	isAimShoot[2] = true;
 	isAimShoot[3] = true;
 	isAimLegit = true;
+	aimSensX = 4.54545;
+	aimSensY = 4.54545;
+	aimSensScopeX = 10.2273;
+	aimSensScopeY = 10.2273;
 
-	isBhop = false;
+	isBhop = true;
 	isBhopToggle = false;
 	bhopToggleKey = 96;
 	bhopGameBind = VK_MENU;
@@ -692,8 +698,8 @@ void resetConfig() {
 	isWallToggle = false;
 	wallToggleKey = 100;
 	isWallFriendly = false;
-	isWallInternal = true;
-	isWallExternal = false;
+	isWallInternal = false;
+	isWallExternal = true;
 	isBox = false;
 	isHealth = true;
 	isName = true;
@@ -707,18 +713,13 @@ void resetConfig() {
 	isFlash = false;
 	isFlashToggle = false;
 	flashToggleKey = 102;
-	isInfo = false;
+	isInfo = true;
 	isInfoToggle = false;
 	infoToggleKey = 103;
 	infoX = 300;
 	infoY = 80;
 
-	isRage = false;
-	isRageToggle = false;
-	rageToggleKey = 104;
-	isRageFriendly = false;
-
-	panelKey = VK_CAPITAL;
+	panelKey = 191;
 	panicKey = VK_HOME;
 }
 bool keyScanInProgess = false;
@@ -1224,19 +1225,15 @@ void DrawPanel() {
 				DoCheckBox(&isAimbotFriendly, "Friendly", i, j, 3);
 				DoCheckBox(&isAimShoot[editMode], "One Tap", i, j, 4);
 				DoCheckBox(&isAimLegit, "Legitimate", i, j, 5);
-				if (isAimLegit)
-					panelBoxColor = 0.75f;
 				DoNumberChangeBox(&aimSmooth[editMode], "Smooth Factor", "", 0, 100, i, j, 6);
-				panelBoxColor = 1.0f;
 				DoNumberChangeBox(&aimRandom[editMode], "Random Factor", "", 0, 100, i, j, 7);
+				DoNumberChangeBox(&aimWidth, "Aim Width", "", 0, 999, i, j, 8);
+				DoNumberChangeBox(&aimHeight, "Aim Height", "", 0, 999, i, j, 9);
 				if(!isHoldAim[editMode])
 					panelBoxColor = 0.75f;
-				DoCheckNumberBox(&isHoldAim[editMode], &aimbotHoldKey, "Hold Key", i, j, 8);
-				DoCheckBox(&isAimWall, "Through Wall", i, j, 9);
+				DoCheckNumberBox(&isHoldAim[editMode], &aimbotHoldKey, "Hold Key", i, j, 10);
+				DoCheckBox(&isAimWall, "Through Wall", i, j, 11);
 				panelBoxColor = 1.0f;
-
-				DoCheckBox(&isRadar, "Radar", i, j, 11);
-				DoCheckNumberBox(&isRadarToggle, &radarToggleKey, "Toggle Key", i, j, 12);
 			}
 			else if (i == 2 && j == 0) {
 				DoCheckBox(&isWall, "Wall", i, j, 0);
@@ -1277,12 +1274,8 @@ void DrawPanel() {
 				panelBoxColor = 1.0f;
 			}
 			else if (i == 1 && j == 1) {
-				DoCheckBox(&isRage, "Rage Bot", i, j, 0);
-				DoCheckNumberBox(&isRageToggle, &rageToggleKey, "Toggle Key", i, j, 1);
-				if (!isRage)
-					panelBoxColor = 0.75f;
-				DoCheckBox(&isRageFriendly, "Friendly", i, j, 2);
-				panelBoxColor = 1.0f;
+				DoCheckBox(&isRadar, "Radar", i, j, 0);
+				DoCheckNumberBox(&isRadarToggle, &radarToggleKey, "Toggle Key", i, j, 1);
 			}
 			else if (i == 2 && j == 1) {
 				DoNumberBox(&panelKey, "Panel Key", i, j, 0);
@@ -1296,7 +1289,7 @@ void DrawPanel() {
 		}
 	}
 	glLineWidth(2);
-	std::string buttons[3] = { "Save Configuration", "Load Previous Save", "Reset to Default" };
+	std::string buttons[3] = { "Save Configuration", "Load Previous Save", "Calibrate Aimbot" };
 	for (int i = 0; i < 3; i++) {
 		POINT p;
 		if (GetCursorPos(&p) && p.x > x + xx*i + 20 && p.x < x + xx*(i + 1) + 10 && p.y > y + yy * 2 + 40 && p.y < y + yy * 2 + 70 && (GetKeyState(VK_LBUTTON) & 0x100) != 0)
@@ -1316,7 +1309,7 @@ void DrawPanel() {
 				else if (i == 1) //Load
 					loadConfig();
 				else if (i == 2) //Reset
-					resetConfig();
+					isAimbotFix = true;
 			}
 		}
 
@@ -1376,12 +1369,6 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		BeginPaint(hWnd, &ps);
 		glClear(GL_COLOR_BUFFER_BIT);
 
-		if (panelEnabled) {
-			EnableWindow(csgo, false);
-			DrawPanel();
-		} else
-			EnableWindow(csgo, true);
-
 		int maxPlayer;
 		DWORD ClientState = Mem.Read<DWORD>(modEngine.dwBase + DwEnginePointer);
 		ReadProcessMemory(handle, (LPVOID)(ClientState + DwMaxPlayer), &maxPlayer, sizeof(int), NULL);
@@ -1418,7 +1405,7 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				glCallLists(16, GL_UNSIGNED_BYTE, buf);
 				int drawline = 0;
 				for (int j = 0; j < maxPlayer; j++) {
-					if (EntityList.GetBaseEntity(j) == 0x0)
+					if (EntityList.GetBaseEntity(j) == 0x0 || EntityList.GetBaseEntity(j) == NewPlayer.GetDwLocalPlayer())
 						continue;
 					char name[32];
 					EntityList.GetName(j, name);
@@ -1449,307 +1436,299 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 					drawline++;
 				}
 			}
-			DWORD pointerGlow = Mem.Read<DWORD>(modClient.dwBase + DwGlow);
-			int objCount = Mem.Read<int>(modClient.dwBase + DwGlow + 0x4);
-			if (pointerGlow != NULL  && isWall) {
-				for (int i = 0; i < objCount; i++) {
-					DWORD mObj = pointerGlow + i * sizeof(GlowObjectDefinition_t);
-					GlowObjectDefinition_t glowObj = Mem.ReadNew<GlowObjectDefinition_t>(mObj);
-					if (glowObj.pEntity != NULL) {
-						for (int j = 0; j < maxPlayer; j++) {
-							if (EntityList.GetBaseEntity(j) == 0x0)
+			if (isWall) {
+				for (int j = 0; j < maxPlayer; j++) {
+					if (EntityList.GetBaseEntity(j) == 0x0 || EntityList.GetBaseEntity(j) == NewPlayer.GetDwLocalPlayer())
+						continue;
+					if (!EntityList.IsDead(j) && !EntityList.IsDormant(j)) {
+						float me3[4];
+						float en3[4];
+						EntityList.GetBonePosition(j, en3, 6);
+						NewPlayer.GetPosition(me3);
+						me3[2] += NewPlayer.GetViewOrigin();
+						int color[4];
+						if (!isWallFriendly && EntityList.GetTeam(j) == NewPlayer.GetTeam()) {
+							color[0] = 0;
+							color[1] = 0;
+							color[2] = 153;
+						}
+						else if (bsp.Visible(me3, en3)) {
+							color[0] = 0;
+							color[1] = 153;
+							color[2] = 0;
+						}
+						else {
+							color[0] = 153;
+							color[1] = 0;
+							color[2] = 0;
+						}
+						glColor4f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f, 1.0f);
+						float boxPos[4];
+						char chModel[64];
+						DWORD model = Mem.Read<DWORD>(EntityList.GetBaseEntity(j) + DwModel);
+						for (int i = 0;i < 64;i++)
+							chModel[i] = Mem.Read<char>(model + 0x4 + i);
+
+						int boneCount = -1;
+
+						float bone3D[100][3];
+						float bone2D[100][2];
+
+						if (strstr(chModel, "ctm_fbi"))
+							boneCount = ctm_fbi.size();
+						else if (strstr(chModel, "ctm_gign"))
+							boneCount = ctm_gign.size();
+						else if (strstr(chModel, "ctm_gsg9"))
+							boneCount = ctm_gsg9.size();
+						else if (strstr(chModel, "ctm_idf"))
+							boneCount = ctm_idf.size();
+						else if (strstr(chModel, "ctm_sas"))
+							boneCount = ctm_sas.size();
+						else if (strstr(chModel, "ctm_st6"))
+							boneCount = ctm_st6.size();
+						else if (strstr(chModel, "ctm_swat"))
+							boneCount = ctm_swat.size();
+						else if (strstr(chModel, "tm_anarchist"))
+							boneCount = tm_anarchist.size();
+						else if (strstr(chModel, "tm_balkan"))
+							boneCount = tm_balkan.size();
+						else if (strstr(chModel, "tm_leet"))
+							boneCount = tm_leet.size();
+						else if (strstr(chModel, "tm_phoenix"))
+							boneCount = tm_phoenix.size();
+						else if (strstr(chModel, "tm_pirate"))
+							boneCount = tm_pirate.size();
+						else if (strstr(chModel, "tm_professional"))
+							boneCount = tm_professional.size();
+						else if (strstr(chModel, "tm_separatist"))
+							boneCount = tm_separatist.size();
+
+						for (int p = 0; p < 4; p++) {
+							if (p >= 2)
+								boxPos[p] = 0.0f;
+							else
+								boxPos[p] = std::numeric_limits<float>::max();
+						}
+
+						float playerPosition[3];
+						EntityList.GetPosition(j, playerPosition);
+						for (int b = 0; b < boneCount; b++)
+						{
+							EntityList.GetBonePosition(j, bone3D[b], b);
+							if (fabs(playerPosition[0] - bone3D[b][0]) > 50 || fabs(playerPosition[1] - bone3D[b][1]) > 50 || fabs(playerPosition[2] - bone3D[b][2]) > 90 || !WorldToScreen(bone3D[b], bone2D[b])) {
+								bone2D[b][0] = -1;
+								bone2D[b][1] = -1;
 								continue;
-							if (glowObj.pEntity == EntityList.GetBaseEntity(j) && glowObj.pEntity != NewPlayer.GetDwLocalPlayer() && !EntityList.IsDead(j) && !EntityList.IsDormant(j)) {
-								float me3[4];
-								float en3[4];
-								EntityList.GetBonePosition(j, en3, 6);
-								NewPlayer.GetPosition(me3);
-								me3[2] += NewPlayer.GetViewOrigin();
-								int color[4];
-								if (!isWallFriendly && EntityList.GetTeam(j) == NewPlayer.GetTeam()) {
-									color[0] = 0;
-									color[1] = 0;
-									color[2] = 153;
+							}
+							int parentId = -1;
+
+							if (strstr(chModel, "ctm_fbi"))
+								parentId = ctm_fbi[b];
+							else if (strstr(chModel, "ctm_gign"))
+								parentId = ctm_gign[b];
+							else if (strstr(chModel, "ctm_gsg9"))
+								parentId = ctm_gsg9[b];
+							else if (strstr(chModel, "ctm_idf"))
+								parentId = ctm_idf[b];
+							else if (strstr(chModel, "ctm_sas"))
+								parentId = ctm_sas[b];
+							else if (strstr(chModel, "ctm_st6"))
+								parentId = ctm_st6[b];
+							else if (strstr(chModel, "ctm_swat"))
+								parentId = ctm_swat[b];
+							else if (strstr(chModel, "tm_anarchist"))
+								parentId = tm_anarchist[b];
+							else if (strstr(chModel, "tm_balkan"))
+								parentId = tm_balkan[b];
+							else if (strstr(chModel, "tm_leet"))
+								parentId = tm_leet[b];
+							else if (strstr(chModel, "tm_phoenix"))
+								parentId = tm_phoenix[b];
+							else if (strstr(chModel, "tm_pirate"))
+								parentId = tm_pirate[b];
+							else if (strstr(chModel, "tm_professional"))
+								parentId = tm_professional[b];
+							else if (strstr(chModel, "tm_separatist"))
+								parentId = tm_separatist[b];
+
+							if (parentId == -1)
+								continue;
+							if (bone2D[b][0] >= 0.0f && bone2D[b][1] >= 0.0f) {
+								if (isWallExternal)
+									DrawSnaplines(bone2D[b][0], bone2D[b][1], bone2D[parentId][0], bone2D[parentId][1]);
+
+								if (bone2D[b][0] < boxPos[0])
+									boxPos[0] = bone2D[b][0];
+								else if (bone2D[parentId][0] < boxPos[0] && bone2D[parentId][0]>0.0f)
+									boxPos[0] = bone2D[parentId][0];
+
+								if (bone2D[b][0] > boxPos[2])
+									boxPos[2] = bone2D[b][0];
+								else if (bone2D[parentId][0] > boxPos[2])
+									boxPos[2] = bone2D[parentId][0];
+
+								if (bone2D[b][1] < boxPos[1] && bone2D[b][1]>0.0f)
+									boxPos[1] = bone2D[b][1];
+								else if (bone2D[parentId][1] < boxPos[1] && bone2D[parentId][1]>0.0f)
+									boxPos[1] = bone2D[parentId][1];
+
+								if (bone2D[b][1] > boxPos[3])
+									boxPos[3] = bone2D[b][1];
+								else if (bone2D[parentId][1] > boxPos[3])
+									boxPos[3] = bone2D[parentId][1];
+							}
+						}
+						if (isWallFriendly || EntityList.GetTeam(j) != NewPlayer.GetTeam()) {
+							float PlayerPos[3];
+							NewPlayer.GetPosition(PlayerPos);
+							float EnemyPos[3];
+							EntityList.GetPosition(j, EnemyPos);
+							float EnemyXY[3];
+
+							if (WorldToScreen(EnemyPos, EnemyXY))
+							{
+								int BoxColor[3] = { 153, 0, 0 };
+								float HealthBarWidth = (boxPos[2] - boxPos[0]) / 5;
+								float HealthBarHeight = (boxPos[3] - boxPos[1]) / 5;
+								if (isBox)
+									DrawBox(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight, boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, BoxColor);
+								if (isHealth) {
+									int HealthBarBackColor[3] = { 153, 0, 0 };
+									int HealthBarColor[3] = { 0, 153, 0 };
+									float HealthHeight = ((boxPos[3] + HealthBarHeight) - (boxPos[1] - HealthBarHeight))*((100.0f - EntityList.GetHealth(j)) / 100.0f);
+									DrawBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, BoxColor);
+									DrawFilledBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, HealthBarBackColor);
+									DrawFilledBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, (boxPos[1] - HealthBarHeight) + (HealthHeight), HealthBarColor);
 								}
-								else if (bsp.Visible(me3, en3)) {
-									color[0] = 0;
-									color[1] = 153;
-									color[2] = 0;
-								}
-								else {
-									color[0] = 153;
-									color[1] = 0;
-									color[2] = 0;
-								}
-								glColor4f(color[0] / 255.0f, color[1] / 255.0f, color[2] / 255.0f, 1.0f);
-								float boxPos[4];
-								char chModel[64];
-								DWORD model = Mem.Read<DWORD>(glowObj.pEntity + 0x6C);
-								for (int i = 0;i < 64;i++)
-									chModel[i] = Mem.Read<char>(model + 0x4 + i);
 
-								int boneCount = -1;
-
-								float bone3D[100][3];
-								float bone2D[100][2];
-
-								if (strstr(chModel, "ctm_fbi"))
-									boneCount = ctm_fbi.size();
-								else if (strstr(chModel, "ctm_gign"))
-									boneCount = ctm_gign.size();
-								else if (strstr(chModel, "ctm_gsg9"))
-									boneCount = ctm_gsg9.size();
-								else if (strstr(chModel, "ctm_idf"))
-									boneCount = ctm_idf.size();
-								else if (strstr(chModel, "ctm_sas"))
-									boneCount = ctm_sas.size();
-								else if (strstr(chModel, "ctm_st6"))
-									boneCount = ctm_st6.size();
-								else if (strstr(chModel, "ctm_swat"))
-									boneCount = ctm_swat.size();
-								else if (strstr(chModel, "tm_anarchist"))
-									boneCount = tm_anarchist.size();
-								else if (strstr(chModel, "tm_balkan"))
-									boneCount = tm_balkan.size();
-								else if (strstr(chModel, "tm_leet"))
-									boneCount = tm_leet.size();
-								else if (strstr(chModel, "tm_phoenix"))
-									boneCount = tm_phoenix.size();
-								else if (strstr(chModel, "tm_pirate"))
-									boneCount = tm_pirate.size();
-								else if (strstr(chModel, "tm_professional"))
-									boneCount = tm_professional.size();
-								else if (strstr(chModel, "tm_separatist"))
-									boneCount = tm_separatist.size();
-
-								for (int p = 0;p < 4;p++) {
-									if (p >= 2)
-										boxPos[p] = 0.0f;
-									else
-										boxPos[p] = std::numeric_limits<float>::max();
-								}
-
-								float playerPosition[3];
-								EntityList.GetPosition(j, playerPosition);
-								for (int b = 0; b < boneCount; b++)
-								{
-									EntityList.GetBonePosition(j, bone3D[b], b);
-									if (fabs(playerPosition[0] - bone3D[b][0]) > 50 || fabs(playerPosition[1] - bone3D[b][1]) > 50 || fabs(playerPosition[2] - bone3D[b][2]) > 90 || !WorldToScreen(bone3D[b], bone2D[b])) {
-										bone2D[b][0] = -1;
-										bone2D[b][1] = -1;
-										continue;
+								if (isName) {
+									char name[32];
+									bool null = false;
+									EntityList.GetName(j, name);
+									for (int i = 0; i < 32;i++) {
+										if (name[i] == 0)
+											null = true;
+										if (null)
+											name[i] = 0;
 									}
-									int parentId = -1;
 
-									if (strstr(chModel, "ctm_fbi"))
-										parentId = ctm_fbi[b];
-									else if (strstr(chModel, "ctm_gign"))
-										parentId = ctm_gign[b];
-									else if (strstr(chModel, "ctm_gsg9"))
-										parentId = ctm_gsg9[b];
-									else if (strstr(chModel, "ctm_idf"))
-										parentId = ctm_idf[b];
-									else if (strstr(chModel, "ctm_sas"))
-										parentId = ctm_sas[b];
-									else if (strstr(chModel, "ctm_st6"))
-										parentId = ctm_st6[b];
-									else if (strstr(chModel, "ctm_swat"))
-										parentId = ctm_swat[b];
-									else if (strstr(chModel, "tm_anarchist"))
-										parentId = tm_anarchist[b];
-									else if (strstr(chModel, "tm_balkan"))
-										parentId = tm_balkan[b];
-									else if (strstr(chModel, "tm_leet"))
-										parentId = tm_leet[b];
-									else if (strstr(chModel, "tm_phoenix"))
-										parentId = tm_phoenix[b];
-									else if (strstr(chModel, "tm_pirate"))
-										parentId = tm_pirate[b];
-									else if (strstr(chModel, "tm_professional"))
-										parentId = tm_professional[b];
-									else if (strstr(chModel, "tm_separatist"))
-										parentId = tm_separatist[b];
-
-									if (parentId == -1)
-										continue;
-									if (bone2D[b][0] >= 0.0f && bone2D[b][1] >= 0.0f) {
-										if (isWallExternal)
-											DrawSnaplines(bone2D[b][0], bone2D[b][1], bone2D[parentId][0], bone2D[parentId][1]);
-
-										if (bone2D[b][0] < boxPos[0])
-											boxPos[0] = bone2D[b][0];
-										else if (bone2D[parentId][0] < boxPos[0] && bone2D[parentId][0]>0.0f)
-											boxPos[0] = bone2D[parentId][0];
-
-										if (bone2D[b][0] > boxPos[2])
-											boxPos[2] = bone2D[b][0];
-										else if (bone2D[parentId][0] > boxPos[2])
-											boxPos[2] = bone2D[parentId][0];
-
-										if (bone2D[b][1] < boxPos[1] && bone2D[b][1]>0.0f)
-											boxPos[1] = bone2D[b][1];
-										else if (bone2D[parentId][1] < boxPos[1] && bone2D[parentId][1]>0.0f)
-											boxPos[1] = bone2D[parentId][1];
-
-										if (bone2D[b][1] > boxPos[3])
-											boxPos[3] = bone2D[b][1];
-										else if (bone2D[parentId][1] > boxPos[3])
-											boxPos[3] = bone2D[parentId][1];
-									}
+									glColor3f(153, 153, 0);
+									glRasterPos2f(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight - 4);
+									glCallLists(32, GL_UNSIGNED_BYTE, name);
 								}
-								if (isWallFriendly || EntityList.GetTeam(j) != NewPlayer.GetTeam()) {
-									float PlayerPos[3];
-									NewPlayer.GetPosition(PlayerPos);
-									float EnemyPos[3];
-									EntityList.GetPosition(j, EnemyPos);
-									float EnemyXY[3];
+								if (isWeapon) {
+									char weapon[32];
+									bool null = false;
+									int weaponId = EntityList.GetWeaponId(j);
+									//_itoa(weaponId, weapon, 10);
+									if (weaponId == 1)
+										strcpy(weapon, "Desert Eagle");
+									else if (weaponId == 2)
+										strcpy(weapon, "Dual Berettas");
+									else if (weaponId == 3)
+										strcpy(weapon, "Five-SeveN");
+									else if (weaponId == 4)
+										strcpy(weapon, "Glock-18");
+									else if (weaponId == 7)
+										strcpy(weapon, "AK-47");
+									else if (weaponId == 8)
+										strcpy(weapon, "AUG");
+									else if (weaponId == 9)
+										strcpy(weapon, "AWP");
+									else if (weaponId == 10)
+										strcpy(weapon, "FAMAS");
+									else if (weaponId == 11)
+										strcpy(weapon, "G3SG1");
+									else if (weaponId == 13)
+										strcpy(weapon, "Galil AR");
+									else if (weaponId == 14)
+										strcpy(weapon, "M249");
+									else if (weaponId == 16)
+										strcpy(weapon, "M4A4");
+									else if (weaponId == 17)
+										strcpy(weapon, "MAC-10");
+									else if (weaponId == 19)
+										strcpy(weapon, "P90");
+									else if (weaponId == 24)
+										strcpy(weapon, "UMP-45");
+									else if (weaponId == 25)
+										strcpy(weapon, "XM1014");
+									else if (weaponId == 26)
+										strcpy(weapon, "PP-Bizon");
+									else if (weaponId == 27)
+										strcpy(weapon, "MAG-7");
+									else if (weaponId == 28)
+										strcpy(weapon, "Negev");
+									else if (weaponId == 29)
+										strcpy(weapon, "Sawed-Off");
+									else if (weaponId == 30)
+										strcpy(weapon, "Tec-9");
+									else if (weaponId == 31)
+										strcpy(weapon, "Zeus x27");
+									else if (weaponId == 32)
+										strcpy(weapon, "P2000");
+									else if (weaponId == 33)
+										strcpy(weapon, "MP7");
+									else if (weaponId == 34)
+										strcpy(weapon, "MP9");
+									else if (weaponId == 35)
+										strcpy(weapon, "Nova");
+									else if (weaponId == 36)
+										strcpy(weapon, "P250");
+									else if (weaponId == 38)
+										strcpy(weapon, "SCAR-20");
+									else if (weaponId == 39)
+										strcpy(weapon, "SG 553");
+									else if (weaponId == 40)
+										strcpy(weapon, "SSG 08");
+									else if (weaponId == 42)
+										strcpy(weapon, "Knife");
+									else if (weaponId == 43)
+										strcpy(weapon, "Flashbang");
+									else if (weaponId == 44)
+										strcpy(weapon, "High Explosive Grenade");
+									else if (weaponId == 45)
+										strcpy(weapon, "Smoke Grenade");
+									else if (weaponId == 46)
+										strcpy(weapon, "Molotov");
+									else if (weaponId == 47)
+										strcpy(weapon, "Decoy Grenade");
+									else if (weaponId == 48)
+										strcpy(weapon, "Incendiary Grenade");
+									else if (weaponId == 49)
+										strcpy(weapon, "C4 Explosive");
+									else if (weaponId == 59)
+										strcpy(weapon, "Knife");
+									else if (weaponId == 60)
+										strcpy(weapon, "M4A1-S");
+									else if (weaponId == 61)
+										strcpy(weapon, "USP-S");
+									else if (weaponId == 63)
+										strcpy(weapon, "CZ75-Auto");
+									else if (weaponId == 63)
+										strcpy(weapon, "R8 Revolver");
+									else if (weaponId == 500)
+										strcpy(weapon, "Bayonet");
+									else if (weaponId == 505)
+										strcpy(weapon, "Flip Knife");
+									else if (weaponId == 506)
+										strcpy(weapon, "Gut Knife");
+									else if (weaponId == 507)
+										strcpy(weapon, "Karambit");
+									else if (weaponId == 508)
+										strcpy(weapon, "M9 Bayonet");
+									else if (weaponId == 509)
+										strcpy(weapon, "Huntsman Knife");
+									else if (weaponId == 512)
+										strcpy(weapon, "Falchion Knife");
+									else if (weaponId == 515)
+										strcpy(weapon, "Butterfly Knife");
+									else if (weaponId == 516)
+										strcpy(weapon, "Shadow Daggers");
 
-									if (WorldToScreen(EnemyPos, EnemyXY))
-									{
-										int BoxColor[3] = { 153, 0, 0 };
-										float HealthBarWidth = (boxPos[2] - boxPos[0]) / 5;
-										float HealthBarHeight = (boxPos[3] - boxPos[1]) / 5;
-										if (isBox)
-											DrawBox(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight, boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, BoxColor);
-										if (isHealth) {
-											int HealthBarBackColor[3] = { 153, 0, 0 };
-											int HealthBarColor[3] = { 0, 153, 0 };
-											float HealthHeight = ((boxPos[3] + HealthBarHeight) - (boxPos[1] - HealthBarHeight))*((100.0f - EntityList.GetHealth(j)) / 100.0f);
-											DrawBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, BoxColor);
-											DrawFilledBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, boxPos[1] - HealthBarHeight, HealthBarBackColor);
-											DrawFilledBox(boxPos[2] + HealthBarWidth, boxPos[3] + HealthBarHeight, boxPos[2] + HealthBarWidth * 2, (boxPos[1] - HealthBarHeight) + (HealthHeight), HealthBarColor);
-										}
-
-										if (isName) {
-											char name[32];
-											bool null = false;
-											EntityList.GetName(j, name);
-											for (int i = 0; i < 32;i++) {
-												if (name[i] == 0)
-													null = true;
-												if (null)
-													name[i] = 0;
-											}
-
-											glColor3f(153, 153, 0);
-											glRasterPos2f(boxPos[0] - HealthBarWidth, boxPos[1] - HealthBarHeight - 4);
-											glCallLists(32, GL_UNSIGNED_BYTE, name);
-										}
-										if (isWeapon) {
-											char weapon[32];
-											bool null = false;
-											int weaponId = EntityList.GetWeaponId(j);
-											//_itoa(weaponId, weapon, 10);
-											if (weaponId == 1)
-												strcpy(weapon, "Desert Eagle");
-											else if (weaponId == 2)
-												strcpy(weapon, "Dual Berettas");
-											else if (weaponId == 3)
-												strcpy(weapon, "Five-SeveN");
-											else if (weaponId == 4)
-												strcpy(weapon, "Glock-18");
-											else if (weaponId == 7)
-												strcpy(weapon, "AK-47");
-											else if (weaponId == 8)
-												strcpy(weapon, "AUG");
-											else if (weaponId == 9)
-												strcpy(weapon, "AWP");
-											else if (weaponId == 10)
-												strcpy(weapon, "FAMAS");
-											else if (weaponId == 11)
-												strcpy(weapon, "G3SG1");
-											else if (weaponId == 13)
-												strcpy(weapon, "Galil AR");
-											else if (weaponId == 14)
-												strcpy(weapon, "M249");
-											else if (weaponId == 16)
-												strcpy(weapon, "M4A4");
-											else if (weaponId == 17)
-												strcpy(weapon, "MAC-10");
-											else if (weaponId == 19)
-												strcpy(weapon, "P90");
-											else if (weaponId == 24)
-												strcpy(weapon, "UMP-45");
-											else if (weaponId == 25)
-												strcpy(weapon, "XM1014");
-											else if (weaponId == 26)
-												strcpy(weapon, "PP-Bizon");
-											else if (weaponId == 27)
-												strcpy(weapon, "MAG-7");
-											else if (weaponId == 28)
-												strcpy(weapon, "Negev");
-											else if (weaponId == 29)
-												strcpy(weapon, "Sawed-Off");
-											else if (weaponId == 30)
-												strcpy(weapon, "Tec-9");
-											else if (weaponId == 31)
-												strcpy(weapon, "Zeus x27");
-											else if (weaponId == 32)
-												strcpy(weapon, "P2000");
-											else if (weaponId == 33)
-												strcpy(weapon, "MP7");
-											else if (weaponId == 34)
-												strcpy(weapon, "MP9");
-											else if (weaponId == 35)
-												strcpy(weapon, "Nova");
-											else if (weaponId == 36)
-												strcpy(weapon, "P250");
-											else if (weaponId == 38)
-												strcpy(weapon, "SCAR-20");
-											else if (weaponId == 39)
-												strcpy(weapon, "SG 553");
-											else if (weaponId == 40)
-												strcpy(weapon, "SSG 08");
-											else if (weaponId == 42)
-												strcpy(weapon, "Knife");
-											else if (weaponId == 43)
-												strcpy(weapon, "Flashbang");
-											else if (weaponId == 44)
-												strcpy(weapon, "High Explosive Grenade");
-											else if (weaponId == 45)
-												strcpy(weapon, "Smoke Grenade");
-											else if (weaponId == 46)
-												strcpy(weapon, "Molotov");
-											else if (weaponId == 47)
-												strcpy(weapon, "Decoy Grenade");
-											else if (weaponId == 48)
-												strcpy(weapon, "Incendiary Grenade");
-											else if (weaponId == 49)
-												strcpy(weapon, "C4 Explosive");
-											else if (weaponId == 59)
-												strcpy(weapon, "Knife");
-											else if (weaponId == 60)
-												strcpy(weapon, "M4A1-S");
-											else if (weaponId == 61)
-												strcpy(weapon, "USP-S");
-											else if (weaponId == 63)
-												strcpy(weapon, "CZ75-Auto");
-											else if (weaponId == 63)
-												strcpy(weapon, "R8 Revolver");
-											else if (weaponId == 500)
-												strcpy(weapon, "Bayonet");
-											else if (weaponId == 505)
-												strcpy(weapon, "Flip Knife");
-											else if (weaponId == 506)
-												strcpy(weapon, "Gut Knife");
-											else if (weaponId == 507)
-												strcpy(weapon, "Karambit");
-											else if (weaponId == 508)
-												strcpy(weapon, "M9 Bayonet");
-											else if (weaponId == 509)
-												strcpy(weapon, "Huntsman Knife");
-											else if (weaponId == 512)
-												strcpy(weapon, "Falchion Knife");
-											else if (weaponId == 515)
-												strcpy(weapon, "Butterfly Knife");
-											else if (weaponId == 516)
-												strcpy(weapon, "Shadow Daggers");
-
-											glColor3f(204, 204, 0);
-											glRasterPos2f(boxPos[0] - HealthBarWidth, boxPos[3] + HealthBarHeight + 12);
-											glCallLists(strlen(weapon), GL_UNSIGNED_BYTE, weapon);
-										}
-									}
+									glColor3f(204, 204, 0);
+									glRasterPos2f(boxPos[0] - HealthBarWidth, boxPos[3] + HealthBarHeight + 12);
+									glCallLists(strlen(weapon), GL_UNSIGNED_BYTE, weapon);
 								}
 							}
 						}
@@ -1757,6 +1736,9 @@ LRESULT APIENTRY WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 				}
 			}
 		}
+		if (panelEnabled)
+			DrawPanel();
+
 		SwapBuffers(MainHDC);
 		EndPaint(hWnd, &ps);
 		}
@@ -1837,12 +1819,6 @@ DWORD WINAPI RedrawLoop(LPVOID PARAMS)
 		Sleep(1);
 	}
 	ExitThread(0);
-}
-
-void click() {
-	mouse_event(MOUSEEVENTF_LEFTDOWN, NULL, NULL, NULL, NULL);
-	Sleep(5);
-	mouse_event(MOUSEEVENTF_LEFTUP, NULL, NULL, NULL, NULL);
 }
 
 void worldToAngle(float* myPos, float* enemyPos, float* ang) {
@@ -2089,13 +2065,14 @@ bool login(char* motd) {
 		else if (flag == '1') {
 			std::cout << "Authorized. Enjoy your hacks." << std::endl;
 			if (strcmp(currentVers, version) && strcmp("UNKNOWN", currentVers)) {
-				SetConsoleMode(hStdin, mode);
+				std::cout << "Outdated Hack! Newest version: " << currentVers << "\nPlease contact the administrator for the update!" << std::endl;
+				/*SetConsoleMode(hStdin, mode);
 				//char toUpdate = 0;
 				std::cout << "\nUpdate v" << currentVers << " is going to be installed." << std::endl;
-				/*while (toUpdate != '1' && toUpdate != '2') {
-					std::cout << "Yes[1] No[2]: ";
-					std::cin >> toUpdate;
-				}*/
+				//while (toUpdate != '1' && toUpdate != '2') {
+					//std::cout << "Yes[1] No[2]: ";
+					//std::cin >> toUpdate;
+				//}
 				//if (toUpdate == '1') {
 					char toChange = 0;
 					std::cout << "Download changelog?" << std::endl;
@@ -2129,8 +2106,9 @@ bool login(char* motd) {
 						return false;
 					} else
 						std::cout << "Failed to download the update. Try again later." << std::endl;
-				}
-			//}
+				}*/
+				return false;
+			}
 			return true;
 		}
 		else if (flag == '2') {
@@ -2159,13 +2137,18 @@ void v0();
 void v1();
 void v2();
 
-char map[128];
+char map[128] = { 0 };
 
 void loadMap() {
 	DWORD ClientState = Mem.Read<DWORD>(modEngine.dwBase + DwEnginePointer);
+	char tempMap[128];
 	//ReadProcessMemory(handle, (LPVOID)(ClientState), map, sizeof(char) * 128, NULL);
-	ReadProcessMemory(handle, (LPVOID)(ClientState + DwMapname), map, sizeof(char) * 128, NULL);
+	ReadProcessMemory(handle, (LPVOID)(ClientState + DwMapname), tempMap, sizeof(char) * 128, NULL);
+	if (strcmp(map, tempMap) == 0)
+		return;
 
+	strcpy_s(map, tempMap);
+	Sleep(5000);
 	char filename[MAX_PATH];
 	if (GetModuleFileNameEx(handle, NULL, filename, MAX_PATH) == 0) {
 		exit(2);
@@ -2224,6 +2207,56 @@ int weaponType(int weaponId) {
 		return 2;
 	}
 	return -1;
+}
+
+void MouseMove(float x, float y)
+{
+	INPUT Input = { 0 };
+	Input.type = INPUT_MOUSE;
+	Input.mi.dx = (LONG)(x * 10);
+	Input.mi.dy = (LONG)(y * 10);
+	Input.mi.dwFlags = MOUSEEVENTF_MOVE;
+	SendInput(1, &Input, sizeof(INPUT));
+}
+
+void calibrate() {
+	std::cout << "Starting normal calibration in ";
+	for (int i = 5; i >= 0; i--) {
+		Sleep(1000);
+		std::cout << i << ".";
+	}
+	float zeroAng[3] = { 0.f, 0.f, 0.f };
+	NewPlayer.SetAngles(zeroAng);
+	Sleep(1000);
+	for (int i = 0;i < 10;i++) {
+		MouseMove(-10, 10);
+		Sleep(10);
+	}
+	NewPlayer.GetAngles(zeroAng);
+	aimSensX = 10 / zeroAng[1];
+	aimSensY = 10 / zeroAng[0];
+
+	std::cout << "\nStarting scope calibration in ";
+	for (int i = 5; i >= 0; i--) {
+		Sleep(1000);
+		std::cout << i << ".";
+	}
+	mouse_event(MOUSEEVENTF_RIGHTDOWN, NULL, NULL, NULL, NULL);
+	Sleep(100);
+	mouse_event(MOUSEEVENTF_RIGHTUP, NULL, NULL, NULL, NULL);
+	zeroAng[0] = 0.f;
+	zeroAng[1] = 0.f;
+	zeroAng[2] = 0.f;
+	NewPlayer.SetAngles(zeroAng);
+	Sleep(1000);
+	for (int i = 0;i < 10;i++) {
+		MouseMove(-10, 10);
+		Sleep(10);
+	}
+	NewPlayer.GetAngles(zeroAng);
+	aimSensScopeX = 10 / zeroAng[1];
+	aimSensScopeY = 10 / zeroAng[0];
+	std::cout << "\nFinished!" << std::endl;
 }
 
 int main() {
@@ -2321,25 +2354,35 @@ int main() {
 	while (!isPanic) {
 		ReadProcessMemory(handle, (LPVOID)(ClientState + DwInGame), &inGame, sizeof(int), NULL); //6: In Game 3: Loading
 		if (inGame == 6 && !isRunning) {
-			Sleep(5000);
 			loadMap();
 			isRunning = true;
 		} else if (inGame != 6 && isRunning) {
 			isRunning = false;
+			isDead = false;
 			activeMode = -1;
-			Sleep(5000);
+			Sleep(1000);
 		}
+		if (isRunning)
+			isDead = NewPlayer.IsDead();
 		if (keyScanInProgess) {
 			Sleep(10);
 			continue;
 		}
+		if (isAimbotFix) {
+			EnableWindow(csgo, panelEnabled);
+			panelEnabled = !panelEnabled;
+			calibrate();
+			isAimbotFix = false;
+		}
 		if (GetAsyncKeyState(panicKey) & 0x8000)
 		{
+			panelEnabled = false;
 			std::cout << "Stopping the program" << std::endl;
 			isPanic = true;
 		}
 		if (GetAsyncKeyState(panelKey) & 0x8000)
 		{
+			EnableWindow(csgo, panelEnabled);
 			panelEnabled = !panelEnabled;
 			while (GetAsyncKeyState(panelKey) & 0x8000)
 				Sleep(1);
@@ -2377,12 +2420,6 @@ int main() {
 			while (GetAsyncKeyState(wallToggleKey) & 0x8000)
 				Sleep(1);
 		}
-		if (isRageToggle && GetAsyncKeyState(rageToggleKey) & 0x8000)
-		{
-			isRage = !isRage;
-			while (GetAsyncKeyState(rageToggleKey) & 0x8000)
-				Sleep(1);
-		}
 		if (isRadarToggle && GetAsyncKeyState(radarToggleKey) & 0x8000)
 		{
 			isRadar = !isRadar;
@@ -2401,9 +2438,9 @@ int main() {
 			while (GetAsyncKeyState(flashToggleKey) & 0x8000)
 				Sleep(1);
 		}
+		Sleep(50);
 	}
 
-	EnableWindow(csgo, true);
 	V0.join();
 	std::cout << "Thread 0 Complete" << std::endl;
 	V1.join();
@@ -2413,8 +2450,6 @@ int main() {
 
 	return 0;
 }
-
-#define THREADSLEEP 1
 
 void angleFix(float* angle) {
 	if (angle[1] >= 180.0f)
@@ -2427,11 +2462,21 @@ void angleFix(float* angle) {
 		angle[0] = -89.0f;
 }
 
+#define V0SLEEP 10
+#define V1SLEEP 20
+#define V2SLEEP 25
+
+void click() {
+	mouse_event(MOUSEEVENTF_LEFTDOWN, NULL, NULL, NULL, NULL);
+	Sleep(rand() % V0SLEEP);
+	mouse_event(MOUSEEVENTF_LEFTUP, NULL, NULL, NULL, NULL);
+}
+
 void v0() {
 	while (true) {
 		if (isPanic)
 			break;
-		if (!isRunning || panelEnabled || (!isBhop && !isFlash && !isTrigger[activeMode])) {
+		if (!isRunning || isDead || panelEnabled || (!isBhop && !isFlash && !isTrigger[activeMode])) {
 			Sleep(250);
 			continue;
 		}
@@ -2443,7 +2488,7 @@ void v0() {
 			int flags = NewPlayer.GetFlags();
 			if ((GetAsyncKeyState(bhopJumpBind) & 0x8000) && flags & 0x1 == 1) {
 				keybd_event(bhopGameBind, MapVirtualKey(bhopGameBind, 0), 0, 0);
-				Sleep(rand() % 10);
+				Sleep(rand() % V0SLEEP + 100);
 				keybd_event(bhopGameBind, MapVirtualKey(bhopGameBind, 0), KEYEVENTF_KEYUP, 0);
 			}
 		}
@@ -2460,22 +2505,8 @@ void v0() {
 				click();
 			}
 		}
-		Sleep(THREADSLEEP);
+		Sleep(V0SLEEP);
 	}
-}
-
-void MouseMove(double x, double y)
-{
-	double fScreenWidth = ::GetSystemMetrics(SM_CXSCREEN) - 1;
-	double fScreenHeight = ::GetSystemMetrics(SM_CYSCREEN) - 1;
-	double fx = x*(65535.0f / fScreenWidth);
-	double fy = y*(65535.0f / fScreenHeight);
-	INPUT  Input = { 0 };
-	Input.type = INPUT_MOUSE;
-	Input.mi.dwFlags = MOUSEEVENTF_MOVE | MOUSEEVENTF_ABSOLUTE;
-	Input.mi.dx = fx;
-	Input.mi.dy = fy;
-	::SendInput(1, &Input, sizeof(INPUT));
 }
 
 void v1() {
@@ -2483,11 +2514,10 @@ void v1() {
 	while (true) {
 		if (isPanic)
 			break;
-		else if (!isRunning || panelEnabled)
-			Sleep(250);
-		else if (!isAimbot[activeMode] && !isRage) {
-			int shotsFired = NewPlayer.GetShotsFired();
-			if (isRcs[activeMode] && shotsFired > 1)
+		else if (!isRunning || isDead || panelEnabled)
+			Sleep(1000);
+		else if (!isAimbot[activeMode]) {
+			if (isRcs[activeMode] && NewPlayer.GetShotsFired() > 1 && NewPlayer.GetWeaponClip() > 0)
 			{
 				float MyPunch[3];
 				NewPlayer.GetPunch(MyPunch);
@@ -2503,7 +2533,20 @@ void v1() {
 				float viewAng[2] = { CurrentAngle[0] -= TotalRCS[0], CurrentAngle[1] -= TotalRCS[1] };
 				angleFix(viewAng);
 
-				NewPlayer.SetAngles(viewAng);
+				if (isAimLegit) {
+					float sensX, sensY;
+					if (NewPlayer.IsScoped()) {
+						sensX = TotalRCS[1] * aimSensScopeX;
+						sensY = TotalRCS[0] * aimSensScopeY;
+					}
+					else {
+						sensX = TotalRCS[1] * aimSensX;
+						sensY = TotalRCS[0] * aimSensY;
+					}
+					MouseMove(sensX, -sensY);
+				}
+				else
+					NewPlayer.SetAngles(viewAng);
 
 				oldAng[0] = MyPunch[0];
 				oldAng[1] = MyPunch[1];
@@ -2519,30 +2562,107 @@ void v1() {
 			DWORD ClientState = Mem.Read<DWORD>(modEngine.dwBase + DwEnginePointer);
 			ReadProcessMemory(handle, (LPVOID)(ClientState + DwMaxPlayer), &maxPlayer, sizeof(int), NULL);
 			int boneId[] = { 6, 5, 4, 3, 2, 0 };
-			for (int i = 0; i < maxPlayer; i++) {
-				if (EntityList.GetBaseEntity(i) == 0x0)
+			int loop, i = -1;
+			float randomization = (float)rand() / RAND_MAX * (aimRandom[activeMode] / 10.0f * 2) - aimRandom[activeMode] / 10.0f;
+			float boneScreen[2];
+			float boneWorld[3];
+			float myWorld[3];
+			float currentAng[3];
+			float smallest[2] = { aimHeight / 10.f, aimWidth / 10.f };
+			for (loop = 0; loop < maxPlayer; loop++) {
+				if (EntityList.GetBaseEntity(loop) == 0x0 || EntityList.IsDormant(loop) || EntityList.IsDead(loop) || (NewPlayer.GetTeam() == EntityList.GetTeam(loop) && !isAimbotFriendly))
 					continue;
-				float boneScreen[2];
-				float boneWorld[3];
-				float myWorld[3];
-				float randomization = (float)rand() / RAND_MAX * (aimRandom[activeMode] / 10.0f * 2) - aimRandom[activeMode] / 10.0f;
-				if (!EntityList.IsDormant(i) && !EntityList.IsDead(i)) {
-					char chModel[64];
-					DWORD model = Mem.Read<DWORD>(EntityList.GetBaseEntity(i) + 0x6C);
-					for (int i = 0;i < 64;i++)
-						chModel[i] = Mem.Read<char>(model + 0x4 + i);
-					char myChModel[64];
-					DWORD myModel = Mem.Read<DWORD>(NewPlayer.GetDwLocalPlayer() + 0x6C);
-					for (int i = 0;i < 64;i++)
-						myChModel[i] = Mem.Read<char>(myModel + 0x4 + i);
-					bool imT = strstr(myChModel, "/tm_");
-					bool enT = strstr(chModel, "/tm_");
-					bool imCT = strstr(myChModel, "/ctm_");
-					bool enCT = strstr(chModel, "/ctm_");
-					if ((!imT && !imCT) || (!enT && !enCT))
-						continue;
+				EntityList.GetBonePosition(loop, boneWorld, boneId[aimBone[activeMode]]);
+				NewPlayer.GetPosition(myWorld);
+				myWorld[2] += NewPlayer.GetViewOrigin();
+				worldToAngle(boneWorld, myWorld, boneScreen);
+				if (isRcs[activeMode]) {
+					float MyPunch[3];
+					NewPlayer.GetPunch(MyPunch);
+					boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
+					boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
+					angleFix(boneScreen);
+				}
+
+				NewPlayer.GetAngles(currentAng);
+				float tempX = fabs(boneScreen[1] - currentAng[1]);
+				float tempY = fabs(boneScreen[0] - currentAng[0]);
+				if (tempX > 180.f)
+					tempX = 360.f - tempX;
+				if (tempY < smallest[0] && tempX < smallest[1] && (isAimWall || bsp.Visible(myWorld, boneWorld))) {
+					smallest[0] = tempY;
+					smallest[1] = tempX;
+					i = loop;
+				}
+			}
+			if (i != -1 && NewPlayer.GetWeaponClip() > 0 && ((isHoldAim[activeMode] && GetAsyncKeyState(aimbotHoldKey) & 0x8000) || NewPlayer.GetShotsFired() > 0)) {
+
+				EntityList.GetBonePosition(i, boneWorld, boneId[aimBone[activeMode]]);
+				NewPlayer.GetAngles(currentAng);
+				boneWorld[0] += randomization;
+				boneWorld[1] += randomization;
+				boneWorld[2] += randomization;
+				NewPlayer.GetPosition(myWorld);
+				myWorld[2] += NewPlayer.GetViewOrigin();
+				worldToAngle(boneWorld, myWorld, boneScreen);
+				if (isRcs[activeMode]) {
+					float MyPunch[3];
+					NewPlayer.GetPunch(MyPunch);
+					boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
+					boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
+					angleFix(boneScreen);
+				}
+
+				float tempX = boneScreen[1] - currentAng[1];
+				float tempY = boneScreen[0] - currentAng[0];
+				if (tempX > 180.f)
+					tempX -= 360.f;
+				else if (tempX < -180.f)
+					tempX += 360.f;
+
+				int aimX = (int)(fabs(tempX) / 16 * aimSmooth[activeMode]) + 1;
+				int aimY = (int)(fabs(tempY) / 16 * aimSmooth[activeMode]) + 1;
+				int aim;
+				if (aimX > aimY)
+					aim = aimX;
+				else
+					aim = aimY;
+
+				float val0 = tempY / (aim), val1 = tempX / (aim);
+				do {
+					if (aim >= 0) {
+						boneScreen[0] -= val0*aim;
+						boneScreen[1] -= val1*aim;
+						aim--;
+					}
+					tempX = boneScreen[1] - currentAng[1];
+					tempY = boneScreen[0] - currentAng[0];
+					if (tempX > 180.f)
+						tempX -= 360.f;
+					else if (tempX < -180.f)
+						tempX += 360.f;
+					if (isAimLegit) {
+						float sensX, sensY;
+						if (NewPlayer.IsScoped()) {
+							sensX = tempX * aimSensScopeX;
+							sensY = tempY * aimSensScopeY;
+						} else {
+							sensX = tempX * aimSensX;
+							sensY = tempY * aimSensY;
+						}
+						MouseMove(-sensX, sensY);
+					}
+					else
+						NewPlayer.SetAngles(boneScreen);
+
+					if (aim == -1 && isAimShoot[activeMode] && !isTrigger[activeMode]) {
+						click();
+						aim--;
+					}
+					Sleep(V1SLEEP);
 
 					EntityList.GetBonePosition(i, boneWorld, boneId[aimBone[activeMode]]);
+					NewPlayer.GetAngles(currentAng);
 					boneWorld[0] += randomization;
 					boneWorld[1] += randomization;
 					boneWorld[2] += randomization;
@@ -2556,95 +2676,11 @@ void v1() {
 						boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
 						angleFix(boneScreen);
 					}
-					float currentAng[3];
-					NewPlayer.GetAngles(currentAng);
 
-					if (isRage && !isTrigger[activeMode] && !isAimbot[activeMode]) {
-						if (bsp.Visible(myWorld, boneWorld) && EntityList.GetTeam(i) != 0 && (imT != enT || isRageFriendly) && !EntityList.IsDormant(i) && !EntityList.IsDead(i)) {
-							NewPlayer.SetAngles(boneScreen);
-							Sleep(5);
-							if (EntityList.GetBaseEntity(i) == EntityList.GetBaseEntity(NewPlayer.GetCrosshairId())) {
-								while (bsp.Visible(myWorld, boneWorld) && isRage && !EntityList.IsDormant(i) && !EntityList.IsDead(i) && NewPlayer.GetWeaponClip() > 0) {
-									click();
-									Sleep(8);
-									EntityList.GetBonePosition(i, boneWorld, boneId[0]);
-									NewPlayer.GetPosition(myWorld);
-									myWorld[2] += NewPlayer.GetViewOrigin();
-									worldToAngle(boneWorld, myWorld, boneScreen);
-
-									if (isRcs[activeMode]) {
-										float MyPunch[3];
-										NewPlayer.GetPunch(MyPunch);
-										boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
-										boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
-										angleFix(boneScreen);
-									}
-
-									NewPlayer.SetAngles(boneScreen);
-									Sleep(5);
-								}
-							}
-						}
-					}
-					else if (isAimbot[activeMode]) {
-						if (fabs(boneScreen[0] - currentAng[0]) < 2.0f && fabs(boneScreen[1] - currentAng[1]) < 1.0f && (isAimWall || bsp.Visible(myWorld, boneWorld)) && ((isAimbotFriendly && NewPlayer.GetTeam() == EntityList.GetTeam(i) && imT == enT) || (imT != enT && NewPlayer.GetTeam() != EntityList.GetTeam(i)))) {
-							float val0 = (boneScreen[0] - currentAng[0]) / (aimSmooth[activeMode] + 1), val1 = (boneScreen[1] - currentAng[1]) / (aimSmooth[activeMode] + 1);
-							int aim = aimSmooth[activeMode];
-							while (fabs(boneScreen[0] - currentAng[0]) < 10.0f && fabs(boneScreen[1] - currentAng[1]) < 10.0f &&!EntityList.IsDead(i) && !EntityList.IsDormant(i) && (NewPlayer.GetWeaponClip() > 0 && ((isHoldAim[activeMode] && GetAsyncKeyState(aimbotHoldKey) & 0x8000) || NewPlayer.GetShotsFired() > 0) && (isAimWall || bsp.Visible(myWorld, boneWorld)))) {
-								EntityList.GetBonePosition(i, boneWorld, boneId[aimBone[activeMode]]);
-								NewPlayer.GetAngles(currentAng);
-								boneWorld[0] += randomization;
-								boneWorld[1] += randomization;
-								boneWorld[2] += randomization;
-								NewPlayer.GetPosition(myWorld);
-								myWorld[2] += NewPlayer.GetViewOrigin();
-								worldToAngle(boneWorld, myWorld, boneScreen);
-								if (aim > 0) {
-									boneScreen[0] -= val0*aim;
-									boneScreen[1] -= val1*aim;
-									aim--;
-								}
-								if (isRcs[activeMode]) {
-									float MyPunch[3];
-									NewPlayer.GetPunch(MyPunch);
-									boneScreen[0] -= MyPunch[0] * (rcsAmount / 100.0f * 2.0f);
-									boneScreen[1] -= MyPunch[1] * (rcsAmount / 100.0f * 2.0f);
-									angleFix(boneScreen);
-								}
-								if (isAimLegit) {
-									float sensX = fabs(boneScreen[1] - currentAng[1]) / 2, sensY = (boneScreen[0] - currentAng[0]) / 2;
-									if (sensX > 10.0f)
-										continue;
-									if (sensX < 0.01f)
-										sensX = 0.01f;
-									if (sensY < 0.01f && sensY > 0.0f)
-										sensY = 0.01f;
-									else if (sensY > -0.01f && sensY < 0.0f)
-										sensY = -0.01f;
-
-									if (currentAng[1] > boneScreen[1] && currentAng[1] - boneScreen[1] < 180)
-										MouseMove(sensX, sensY);
-									else if (currentAng[1] < boneScreen[1] && boneScreen[1] - currentAng[1] < 180)
-										MouseMove(-sensX, sensY);
-									else if (currentAng[1] > boneScreen[1])
-										MouseMove(-sensX, sensY);
-									else if (currentAng[1] < boneScreen[1])
-										MouseMove(sensX, sensY);
-								}
-								else
-									NewPlayer.SetAngles(boneScreen);
-								Sleep(5);
-								if ((aim == 0 || (isAimLegit && fabs(boneScreen[1] - currentAng[1]) < 0.01f && fabs(boneScreen[0] - currentAng[0]) < 0.01f)) && isAimShoot[activeMode] && !isTrigger[activeMode]) {
-									click();
-									aim = -1;
-								}
-							}
-						}
-					}
-				}
+				} while (!NewPlayer.IsDead() && fabs(tempY) < aimHeight / 10.f && fabs(tempX) < aimWidth / 10.f &&!EntityList.IsDead(i) && !EntityList.IsDormant(i) && (NewPlayer.GetWeaponClip() > 0 && ((isHoldAim[activeMode] && GetAsyncKeyState(aimbotHoldKey) & 0x8000) || NewPlayer.GetShotsFired() > 0) && (isAimWall || bsp.Visible(myWorld, boneWorld))));
 			}
 		}
-		Sleep(THREADSLEEP);
+		Sleep(V1SLEEP + 20);
 	}
 }
 
@@ -2654,7 +2690,7 @@ void v2() {
 	while (true) {
 		if (isPanic)
 			break;
-		else if (!isRunning || panelEnabled || (!isWall && !isRadar)) {
+		else if (!isRunning || isDead || panelEnabled || (!isWall && !isRadar)) {
 			Sleep(250);
 			continue;
 		}
@@ -2677,7 +2713,7 @@ void v2() {
 					GlowObjectDefinition_t glowObj = Mem.ReadNew<GlowObjectDefinition_t>(mObj);
 					if (glowObj.pEntity != NULL) {
 						char chModel[64];
-						DWORD model = Mem.Read<DWORD>(glowObj.pEntity + 0x6C);
+						DWORD model = Mem.Read<DWORD>(glowObj.pEntity + DwModel);
 						for (int a = 0;a < 64;a++)
 							chModel[a] = Mem.Read<char>(model + 0x4 + a);
 						if (strstr(chModel, "ied") && isBomb) {
@@ -2701,21 +2737,16 @@ void v2() {
 						else if (strstr(chModel, "player")) {
 							float me3[4];
 							float en3[4];
-							EntityList.GetBonePosition(glowObj.pEntity, en3, 6);
+							BaseList.GetBonePosition(glowObj.pEntity, en3, 6);
 							NewPlayer.GetPosition(me3);
 							me3[2] += NewPlayer.GetViewOrigin();
 							//Vector me = { me3[0], me3[1], me3[2] };
 							//Vector en = { en3[0], en3[1], en3[2] };
 
-							if (!isWallFriendly && EntityList.GetTeam(glowObj.pEntity) == NewPlayer.GetTeam()) {
+							if (!isWallFriendly && BaseList.GetTeam(glowObj.pEntity) == NewPlayer.GetTeam()) {
 								glowObj.r = 0;
 								glowObj.g = 0;
 								glowObj.b = 255;
-							}
-							else if (glowObj.pEntity == EntityList.GetBaseEntity(NewPlayer.GetCrosshairId())) {
-								glowObj.r = 127;
-								glowObj.g = 0;
-								glowObj.b = 0;
 							}
 							else if (bsp.Visible(me3, en3)) {
 								glowObj.r = 0;
@@ -2730,7 +2761,7 @@ void v2() {
 							glowObj.a = glowThickness;
 							glowObj.m_bRenderWhenOccluded = true;
 							glowObj.m_bRenderWhenUnoccluded = false;
-							if (!EntityList.IsDead(glowObj.pEntity) && !EntityList.IsDormant(glowObj.pEntity)) {
+							if (!BaseList.IsDead(glowObj.pEntity) && !BaseList.IsDormant(glowObj.pEntity)) {
 								Mem.WriteNew<GlowObjectDefinition_t>(mObj, glowObj);
 								if (isRadar)
 									Mem.WriteNew<int>(glowObj.pEntity + DwSpotted, 1);
@@ -2738,7 +2769,7 @@ void v2() {
 						}
 					}
 				}
-				Sleep(THREADSLEEP);
+				Sleep(V2SLEEP);
 			}
 		}
 	}

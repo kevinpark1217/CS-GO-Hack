@@ -27,6 +27,9 @@
     <ClCompile Include="BSP.cpp">
       <Filter>Resource Files</Filter>
     </ClCompile>
+    <ClCompile Include="keylog.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="PMemory.h">
@@ -42,6 +45,9 @@
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="resource.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="keylog.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
