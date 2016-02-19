@@ -13,7 +13,6 @@
 #include <chrono>
 #include <fstream>
 #include <Shlwapi.h>
-#include <wininet.h> //for uploadFile function
 #pragma comment(lib, "urlmon.lib")
 #pragma comment(lib, "Ws2_32.lib")
 #pragma comment(lib, "Shlwapi.lib")

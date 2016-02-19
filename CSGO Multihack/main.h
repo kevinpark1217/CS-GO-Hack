@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <math.h>  
 #include <strsafe.h>
-#include <gl/GL.h>
-#include <gl/GLU.h>
 #include <map>
 #pragma comment (lib, "opengl32.lib")
 #include <dwmapi.h>
