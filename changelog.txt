@@ -1,0 +1,175 @@
+Version 2.8.6	2/18/16
+- Updated Offsets
+- Fixed Auto Shoot
+
+Version 2.8.5	2/10/16
+- Standalone recoil control can be controlled using mouse event
+- Redid the aimbot math
+
+Version 2.8.4	2/9/16
+- Minor bug fix in legit aimbot
+
+Version 2.8.3	1/22/16
+- Disabled auto update
+
+Version 2.8.2	1/20/16
+- Updated Offsets
+
+Version 2.8.1	1/16/16
+- Fixed over-calibration
+
+Version 2.8.0	1/16/16
+- Better calibration
+- Additional scope calibration
+- Accurate one taps
+
+Version 2.7.7	1/15/16
+- Aimbot angle modification
+
+Version 2.7.6	1/15/16
+- Fixed VAC Authentication Error
+- Increased aimbot angle
+
+Version 2.7.5	1/13/16
+- Removed ragebot
+- Added legitimate aimbot calibration
+- Fixed random crash after death
+
+Version 2.7.4	1/8/16
+- Fixed wrong display on the panel
+- Changed overlay name
+
+Version 2.7.3	1/6/16
+- Added legitimate aimbot
+
+Version 2.7.2	1/5/16
+- Applied randomization to rage bot
+- Fixed randomization glitch locking
+
+Version 2.7.1	1/5/16
+- Added aimbot randomization
+
+Version 2.7.0	12/18/15
+- Added weapon profiles
+
+Version 2.6.2	12/17/15
+- Offset Table Update
+- Fixed External Wall Bug
+
+Version 2.6.1	12/8/15
+- Winter Offensive Update Fix
+
+Version 2.6.0	11/17/15
+- Offset Scan Update
+
+Version 2.5.1	11/10/15
+- Minor variable fix
+- Offset Table Update
+
+Version 2.5.0	10/25/15
+- One Tap Option that allows easier juan deag
+
+Version 2.4.1	10/21/15
+- Updated netvar
+
+Version 2.4.0	10/11/15
+- Player full status in the info
+
+Version 2.3.1	10/10/15
+- Fixed aimbot problem
+
+Version 2.3.0	10/10/15
+- More compact menu panel
+- Chicken Wall
+- Fixed csgo window disabled when exiting
+- Fixed ragebot automatically switching off
+
+Version 2.2.2	9/26/15
+- Fixed Invalid Angle error when exited the game
+
+Version 2.2.1	9/26/15
+- Smooth Aimbot Feature
+
+Version 2.2.0	9/25/15
+- More efficient internal wall
+- New bomb wall hack feature
+
+Version 2.1.5	9/24/15
+- Updated offsets
+- Fixed aimbot activating by key when legit aim is disabled
+
+Version 2.1.4	9/22/15
+- More stable aimbot
+- Community server radar fix
+
+Version 2.1.3	9/20/15
+- Fixed aimlocking into teammates
+- Fixed one player not showing on community server
+
+Version 2.1.2	9/19/15
+- Removed GlowEsp Flash Indicator (No longer works)
+- Fixed old program not deleting
+
+Version 2.1.1	9/19/15
+- Minor GlowEsp Color Fix
+
+Version 2.1.0	9/19/15
+- New dynamic and static offsets
+- New player weapon feature
+- More efficient config loader
+
+Versiom 2.0.1	9/13/15
+- Fixed keys getting toggled while key scanning
+- Loads configuration automatically at start
+
+Versiom 2.0.0	9/13/15
+- Fresh new UI
+- Changeable key binds
+- Many more options
+
+Version 1.3.3	9/11/15
+- Fixed bug when changing map
+- Fixed aimbot glitch that makes the player turn 180 degrees
+
+Version 1.3.2	9/7/15
+- Legit Aimbot
+
+Version 1.3.1	9/4/15
+- BSP Parsing
+- Force auto update (security purposes)
+- Removed register feature
+
+Version 1.2.4	8/26/15
+- Radar can be activated without glow on
+- External features are no longer subcategory of glow
+
+Version 1.2.3	8/23/15
+- Updated Offsets
+- Fixed name not working
+
+Version 1.2.2	8/21/15
+- Self Updating Binary
+- Better efficiency
+- Ragebot glitch fix
+
+Version 1.2.1	8/20/15
+- Updated offsets
+
+Version 1.2.0	8/17/15
+- Updated offsets
+- Refined ragebot
+
+Version 1.1.2	8/14/15
+- Updated offsets
+- Added No Flash
+
+Version 1.1.1
+- Updated data transfer
+- Added version checker
+
+Version 1.1.0
+- Added Rcs to aimbot
+- Display of the version number
+
+Version 1.0.0
+- First official release

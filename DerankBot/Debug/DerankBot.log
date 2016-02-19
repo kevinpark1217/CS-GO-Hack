@@ -1,0 +1,8 @@
+﻿  Source.cpp
+b:\personal\visual studio 2015\projects\csgo\derankbot\source.cpp(349): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+b:\personal\visual studio 2015\projects\csgo\derankbot\source.cpp(350): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+b:\personal\visual studio 2015\projects\csgo\derankbot\source.cpp(567): warning C4101: 'maxPlayer': unreferenced local variable
+  PMemory.cpp
+  BSP.cpp
+  Generating Code...
+  DerankBot.vcxproj -> B:\Personal\Visual Studio 2015\Projects\CSGO\DerankBot\Debug\DerankBot.exe

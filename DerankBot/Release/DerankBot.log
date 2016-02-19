@@ -1,0 +1,12 @@
+﻿  BSP.cpp
+  PMemory.cpp
+  Source.cpp
+Source.cpp(349): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+Source.cpp(350): warning C4244: '=': conversion from 'double' to 'LONG', possible loss of data
+Source.cpp(567): warning C4101: 'maxPlayer': unreferenced local variable
+  Generating code
+  0 of 361 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    10 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  DerankBot.vcxproj -> B:\Personal\Visual Studio 2015\Projects\CSGO\Release\DerankBot.exe

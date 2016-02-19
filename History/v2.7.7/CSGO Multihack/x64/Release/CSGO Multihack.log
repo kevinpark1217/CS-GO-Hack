@@ -1,0 +1,45 @@
+﻿  main.cpp
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(38): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+  main.cpp(60): note: see reference to function template instantiation 'T PMemory::Read<DWORD>(DWORD,bool,int,T)' being compiled
+          with
+          [
+              T=DWORD
+          ]
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(43): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(43): warning C4312: 'type cast': conversion from 'DWORD' to 'DWORD *' of greater size
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(72): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+  main.cpp(66): note: see reference to function template instantiation 'WriteType PMemory::Write<float*>(DWORD,WriteType,bool,int)' being compiled
+          with
+          [
+              WriteType=float *
+          ]
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(77): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(43): warning C4312: 'type cast': conversion from 'int' to 'int *' of greater size
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(57): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+  main.cpp(116): note: see reference to function template instantiation 'cData PMemory::ReadTwo<Vec3_t>(DWORD)' being compiled
+          with
+          [
+              cData=Vec3_t
+          ]
+b:\personal\visual studio 2015\projects\csgo multihack\csgo multihack\PMemory.h(64): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+  main.cpp(240): note: see reference to function template instantiation 'T PMemory::ReadNew<GlowObjectDefinition_t>(DWORD)' being compiled
+          with
+          [
+              T=GlowObjectDefinition_t
+          ]
+  PMemory.cpp
+PMemory.cpp(13): error C2664: 'int strcmp(const char *,const char *)': cannot convert argument 1 from 'WCHAR [260]' to 'const char *'
+  PMemory.cpp(13): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+PMemory.cpp(39): error C2664: 'int strcmp(const char *,const char *)': cannot convert argument 1 from 'WCHAR [256]' to 'const char *'
+  PMemory.cpp(39): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+PMemory.cpp(42): warning C4311: 'type cast': pointer truncation from 'HMODULE' to 'DWORD'
+PMemory.cpp(42): warning C4302: 'type cast': truncation from 'HMODULE' to 'DWORD'
+PMemory.cpp(57): error C2664: 'int strcmp(const char *,const char *)': cannot convert argument 1 from 'WCHAR [256]' to 'const char *'
+  PMemory.cpp(57): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+PMemory.cpp(61): error C2664: 'DWORD K32GetModuleFileNameExW(HANDLE,HMODULE,LPWSTR,DWORD)': cannot convert argument 3 from 'char [260]' to 'LPWSTR'
+  PMemory.cpp(61): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+PMemory.cpp(63): error C2664: 'HMODULE LoadLibraryW(LPCWSTR)': cannot convert argument 1 from 'char [260]' to 'LPCWSTR'
+  PMemory.cpp(63): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast
+PMemory.cpp(85): warning C4312: 'type cast': conversion from 'DWORD' to 'LPVOID' of greater size
+PMemory.cpp(85): error C2664: 'BOOL ReadProcessMemory(HANDLE,LPCVOID,LPVOID,SIZE_T,SIZE_T *)': cannot convert argument 5 from 'unsigned long *' to 'SIZE_T *'
+  PMemory.cpp(85): note: Types pointed to are unrelated; conversion requires reinterpret_cast, C-style cast or function-style cast

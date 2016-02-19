@@ -27,7 +27,7 @@ PModule modEngine, modClient;
 HWND csgo;
 HANDLE handle;
 BSP bsp;
-const char* version = "2.8.5";
+const char* version = "2.8.6";
 
 DWORD DwLocalPlayer, DwEntityList, DwEnginePointer, DwViewAngle, DwGlow, DwViewMatrix, DwRadarBase, DwIGameResources;
 
@@ -96,7 +96,7 @@ struct
 	int GetCrosshairId()
 	{
 		DWORD DwLocalPlayer = GetDwLocalPlayer();
-		return Mem.Read<int>(DwLocalPlayer + DwCrosshairId) - 1;
+		return Mem.Read<int>(DwLocalPlayer + DwCrosshairId - 0x4);
 	}
 
 	void GetPunch(float* Punch)
@@ -2263,10 +2263,10 @@ int main() {
 	std::cout << "TekHak\nCounter Strike: Global Offensive Multi-Hack\nVersion " << version << "\nDeveloped by Kevin Park\n" << std::endl;
 	
 	char motd[128];
-	if (!login(motd)) {
+	/*if (!login(motd)) {
 		Sleep(2500);
 		exit(2);
-	}
+	}*/
 
 	resetConfig();
 	loadConfig();
@@ -2326,8 +2326,8 @@ int main() {
 	DwRadarBase = Mem.Read<DWORD>(rpStart + 1) - modClient.dwBase;
 	//std::cout << "0x" << std::hex << DwRadarBase << std::endl;
 
-	DWORD vpStart = Mem.FindPatternArr(modClient.dwBase, modClient.dwSize, "xxxxxxxxxxxxxxxxxxxxxxx????xxxxxx", 33, 0x53, 0x8B, 0xDC, 0x83, 0xEC, 0x08, 0x83, 0xE4, 0xF0, 0x83, 0xC4, 0x04, 0x55, 0x8B, 0x6B, 0x04, 0x89, 0x6C, 0x24, 0x04, 0x8B, 0xEC, 0xA1, 0x00, 0x00, 0x00, 0x00, 0x81, 0xEC, 0x98, 0x03, 0x00, 0x00);
-	DwViewMatrix = Mem.Read<DWORD>(vpStart + 0x4EE) + 0x80 - modClient.dwBase;
+	DWORD vpStart = Mem.FindPatternArr(modClient.dwBase, modClient.dwSize, "xxxx????xx", 10, 0xF3, 0x0F, 0x6F, 0x05, 0x00, 0x00, 0x00, 0x00, 0x8D, 0x85);
+	DwViewMatrix = Mem.Read<DWORD>(vpStart + 0x4) + 0xB0 - modClient.dwBase;
 	//std::cout << "0x" << std::hex << DwViewMatrix << std::endl;
 
 	DWORD ipStart = Mem.FindPatternArr(modClient.dwBase, modClient.dwSize, "xx????xxxx????xx", 16, 0x8B, 0x3D, 0x00, 0x00, 0x00, 0x00, 0x85, 0xFF, 0x0F, 0x84, 0x00, 0x00, 0x00, 0x00, 0x81, 0xC7);
@@ -2476,13 +2476,17 @@ void v0() {
 	while (true) {
 		if (isPanic)
 			break;
-		if (!isRunning || isDead || panelEnabled || (!isBhop && !isFlash && !isTrigger[activeMode])) {
+		if (!isRunning || panelEnabled || (!isBhop && !isFlash && !isTrigger[activeMode])) {
 			Sleep(250);
 			continue;
 		}
 		if (isFlash) {
 			if (NewPlayer.getFlashDuration() > 0.01f)
 				NewPlayer.setFlashDuration(0.0f);
+		}
+		if (isDead) {
+			Sleep(V0SLEEP);
+			continue;
 		}
 		if (isBhop) {
 			int flags = NewPlayer.GetFlags();
@@ -2492,14 +2496,19 @@ void v0() {
 				keybd_event(bhopGameBind, MapVirtualKey(bhopGameBind, 0), KEYEVENTF_KEYUP, 0);
 			}
 		}
+		if(activeMode == -1) {
+			Sleep(V0SLEEP);
+			continue;
+		}
 		if (isTrigger[activeMode]) {
+			int maxPlayer;
+			DWORD ClientState = Mem.Read<DWORD>(modEngine.dwBase + DwEnginePointer);
+			ReadProcessMemory(handle, (LPVOID)(ClientState + DwMaxPlayer), &maxPlayer, sizeof(int), NULL);
 			int MyTeam = NewPlayer.GetTeam();
 			int CrossHairID = NewPlayer.GetCrosshairId();
-			DWORD Enemy = Mem.Read<DWORD>(modClient.dwBase + DwEntityList + (CrossHairID * 0x10)); // CH = Crosshair.
-			int EnemyHealth = Mem.Read<int>(Enemy + DwHealth); // Enemy in crosshair's 
-			int EnemyTeam = Mem.Read<int>(Enemy + DwTeamNumber); // Enemy in crosshair's team, we need this to compare it to our own player's team)]
+			DWORD Enemy = Mem.Read<DWORD>(modClient.dwBase + DwEntityList + ((CrossHairID - 1) * DwEntitySize)); // CH = Crosshair.
 
-			if ((!isTriggerHold || GetAsyncKeyState(triggerHoldKey) & 0x8000) && (isTriggerFriendly || MyTeam != EnemyTeam) && NewPlayer.GetWeaponClip() > 0 && EnemyHealth > 0 && EnemyHealth <= 100)
+			if (CrossHairID > 0 && CrossHairID <= maxPlayer && Enemy != NULL && (!isTriggerHold || GetAsyncKeyState(triggerHoldKey) & 0x8000) && (isTriggerFriendly || MyTeam != BaseList.GetTeam(Enemy)) && NewPlayer.GetWeaponClip() > 0 && !BaseList.IsDead(Enemy))
 			{
 				Sleep(triggerDelay[activeMode]);
 				click();
@@ -2514,8 +2523,8 @@ void v1() {
 	while (true) {
 		if (isPanic)
 			break;
-		else if (!isRunning || isDead || panelEnabled)
-			Sleep(1000);
+		else if (!isRunning || isDead || activeMode == -1 || panelEnabled)
+			Sleep(250);
 		else if (!isAimbot[activeMode]) {
 			if (isRcs[activeMode] && NewPlayer.GetShotsFired() > 1 && NewPlayer.GetWeaponClip() > 0)
 			{
@@ -2690,7 +2699,7 @@ void v2() {
 	while (true) {
 		if (isPanic)
 			break;
-		else if (!isRunning || isDead || panelEnabled || (!isWall && !isRadar)) {
+		else if (!isRunning || isDead || activeMode == -1 || panelEnabled || (!isWall && !isRadar)) {
 			Sleep(250);
 			continue;
 		}

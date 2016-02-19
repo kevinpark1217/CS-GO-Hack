@@ -12,7 +12,7 @@
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 
-const DWORD DwCrosshairId = 0x0000A944;
+const DWORD DwCrosshairId = 0x0000A940;
 const DWORD DwVecViewOffset = 0x00000104;
 const DWORD DwVecOrigin = 0x00000134;
 const DWORD DwVecPunch = 0x00003018;
@@ -28,7 +28,7 @@ const DWORD DwVecVelocity = 0x110;
 const DWORD DwIsDormant = 0xE9;
 const DWORD DwFlash = 0x0000A2E4;
 const DWORD DwFlashDuration = 0x0000A2E8;
-const DWORD DwSpotted = 0x00000935;
+const DWORD DwSpotted = 0x00000939;
 const DWORD DwActiveWeapon = 0x00002EE8;
 const DWORD DwFlags = 0x100;
 const DWORD DwMapname = 0x00000284;
@@ -37,15 +37,15 @@ const DWORD DwClip = 0x000031F4;
 const DWORD DwInGame = 0x00000100;
 const DWORD DwMaxPlayer = 0x00000308;
 
-const DWORD DwResourceTeam = 0x0F30;
-const DWORD DwResourceAlive = 0x1138;
-const DWORD DwResourceHealth = 0x117C;
-const DWORD DwResourceArmor = 0x1834;
-const DWORD DwResourceHelmet = 0x17F1;
-const DWORD DwResourceKit = 0x17B0;
-const DWORD DwResourceRank = 0x1A3C;
-const DWORD DwResourceWins = 0x1B40;
-const DWORD DwResourceSpent = 0x462C;
+const DWORD DwResourceTeam = 0x0F38;
+const DWORD DwResourceAlive = 0x1140;
+const DWORD DwResourceHealth = 0x1184;
+const DWORD DwResourceArmor = 0x183C;
+const DWORD DwResourceHelmet = 0x17F9;
+const DWORD DwResourceKit = 0x17B8;
+const DWORD DwResourceRank = 0x1A44;
+const DWORD DwResourceWins = 0x1B48;
+const DWORD DwResourceSpent = 0x4634;
 
 const char* ranks[] =
 {
