@@ -2264,10 +2264,10 @@ int main() {
 	std::cout << "TekHak\nCounter Strike: Global Offensive Multi-Hack\nVersion " << version << "\nDeveloped by Kevin Park\n" << std::endl;
 	
 	char motd[128];
-	if (!login(motd)) {
+	/*if (!login(motd)) {
 		Sleep(2500);
 		exit(2);
-	}
+	}*/
 
 	resetConfig();
 	loadConfig();
