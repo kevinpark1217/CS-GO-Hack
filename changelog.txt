@@ -1,3 +1,6 @@
+Version 2.8.7	2/24/16
+- Updated Offsets
+
 Version 2.8.6	2/18/16
 - Updated Offsets
 - Fixed Auto Shoot

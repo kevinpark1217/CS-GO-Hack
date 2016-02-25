@@ -28,7 +28,7 @@ PModule modEngine, modClient;
 HWND csgo;
 HANDLE handle;
 BSP bsp;
-const char* version = "2.8.6";
+const char* version = "2.8.7";
 
 DWORD DwLocalPlayer, DwEntityList, DwEnginePointer, DwViewAngle, DwGlow, DwViewMatrix, DwRadarBase, DwIGameResources;
 
@@ -2264,10 +2264,10 @@ int main() {
 	std::cout << "TekHak\nCounter Strike: Global Offensive Multi-Hack\nVersion " << version << "\nDeveloped by Kevin Park\n" << std::endl;
 	
 	char motd[128];
-	/*if (!login(motd)) {
+	if (!login(motd)) {
 		Sleep(2500);
 		exit(2);
-	}*/
+	}
 
 	resetConfig();
 	loadConfig();

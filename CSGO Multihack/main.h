@@ -10,22 +10,22 @@
 #include <dwmapi.h>
 #pragma comment(lib, "Dwmapi.lib")
 
-const DWORD DwCrosshairId = 0x0000A944;
+const DWORD DwCrosshairId = 0x0000A954;
 const DWORD DwVecViewOffset = 0x00000104;
 const DWORD DwVecOrigin = 0x00000134;
 const DWORD DwVecPunch = 0x00003018;
-const DWORD DwScoped = 0x387C;
+const DWORD DwScoped = 0x388C;
 const DWORD DwModel = 0x6C;
 const DWORD DwTeamNumber = 0xF0;
-const DWORD DwShotsFired = 0x0000A2A0;
+const DWORD DwShotsFired = 0x0000A2B0;
 const DWORD DwBoneMatrix = 0x00002698;
 const DWORD DwEntitySize = 0x10;
 const DWORD DwHealth = 0xFC;
 const DWORD DwLifeState = 0x25B;
 const DWORD DwVecVelocity = 0x110;
 const DWORD DwIsDormant = 0xE9;
-const DWORD DwFlash = 0x0000A2E4;
-const DWORD DwFlashDuration = 0x0000A2E8;
+const DWORD DwFlash = 0x0000A2F4;
+const DWORD DwFlashDuration = 0x0000A2F8;
 const DWORD DwSpotted = 0x00000939;
 const DWORD DwActiveWeapon = 0x00002EE8;
 const DWORD DwFlags = 0x100;
